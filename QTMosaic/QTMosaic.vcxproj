@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2C8DED3E-111D-4272-A54A-F1865F02A90E}</ProjectGuid>
-    <RootNamespace>Skeleton</RootNamespace>
+    <RootNamespace>QTMosaicPiPL</RootNamespace>
     <ProjectName>QTMosaic</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -102,7 +102,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Skeleton.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -157,7 +157,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Skeleton.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -213,7 +213,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Skeleton.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -268,7 +268,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/Skeleton.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -318,7 +318,37 @@
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
-
+  <ItemGroup>
+    <CustomBuild Include="$(ProjectDir)src\QTMosaicPiPL.r">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling the PiPL</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling the PiPL</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I "$(SolutionDir)dep\Headers" /EP "$(ProjectDir)src\%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
+"$(SolutionDir)dep\Resources\PiPLTool" "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).rrc"
+cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)"\\"%(Filename)".rc
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cl /I "$(SolutionDir)dep\Headers" /EP "$(ProjectDir)src\%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
+"$(SolutionDir)dep\Resources\PiPLTool" "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).rrc"
+cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)"\\"%(Filename)".rc
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename).rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename).rc;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling the PiPL</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling the PiPL</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">cl /I "$(SolutionDir)dep\Headers" /EP "$(ProjectDir)src\%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
+"$(SolutionDir)dep\Resources\PiPLTool" "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).rrc"
+cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)"\\"%(Filename)".rc
+</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">cl /I "$(SolutionDir)dep\Headers" /EP "$(ProjectDir)src\%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
+"$(SolutionDir)dep\Resources\PiPLTool" "$(IntDir)%(Filename).rr" "$(IntDir)%(Filename).rrc"
+cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)"\\"%(Filename)".rc
+</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename).rc;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename).rc;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="QTMosaicPiPL.rc" />
+  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h" />
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h" />
@@ -347,9 +377,6 @@
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(ProjectDir)src\QTMosaicPiPL.r" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
