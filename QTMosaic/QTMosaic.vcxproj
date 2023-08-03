@@ -318,6 +318,7 @@
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
   </ItemDefinitionGroup>
+
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h" />
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h" />
@@ -348,7 +349,7 @@
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\QTMosaicPiPL.r" />
+    <None Include="$(ProjectDir)src\QTMosaicPiPL.r" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
