@@ -20,25 +20,20 @@
 /*******************************************************************/
 
 #include "QTMosaic.h"
+#include <unordered_map>
 
-typedef struct {
-	A_u_long	index;
-	A_char		str[256];
-} TableString;
-
-
-// index | str[256]
-TableString		g_strs[StrID_NUMTYPES] = {
-	StrID_NONE,						"",
-	StrID_Name,						"Quad-Tree Mosaic",
-	StrID_Description,				"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq",
-	StrID_Gain_Param_Name,			"Gain",
-	StrID_Color_Param_Name,			"Color",
+std::unordered_map<A_u_long, std::string> g_strs = {
+	{StrID_NONE,					""},
+	{StrID_Name,					"Quad-Tree Mosaic"},
+	{StrID_Description,				"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq"},
+	{StrID_Gain_Param_Name,			"Gain"},
+	{StrID_Color_Param_Name,		"Color"},
+	{StrID_Count_Name,              "count"}
 };
 
 
-char	*GetStringPtr(int strNum)
+char *GetStringPtr(int strNum)
 {
-	return g_strs[strNum].str;
+	return (char*)g_strs[strNum].c_str();
 }
 	

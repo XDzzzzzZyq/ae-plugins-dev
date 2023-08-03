@@ -14,6 +14,12 @@
     <Filter Include="Supporting code">
       <UniqueIdentifier>{f2f05dcb-eed5-4aa5-b2d0-504449ce3cf4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\Main">
+      <UniqueIdentifier>{831f0357-6954-4483-aea1-c2e543872df3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Parameter">
+      <UniqueIdentifier>{529e945a-6b82-4518-bf99-1c3a84368db5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)dep\Headers\A.h">
@@ -74,10 +80,13 @@
       <Filter>Headers\AE</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectDir)src\QTMosaic_Strings.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Parameter</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h">
-      <Filter>Headers</Filter>
+      <Filter>Headers\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Parameters.h">
+      <Filter>Headers\Parameter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,8 +96,15 @@
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp">
       <Filter>Supporting code</Filter>
     </ClCompile>
-    <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
-    <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
+    <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp">
+      <Filter>Headers\Parameter</Filter>
+    </ClCompile>
+    <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp">
+      <Filter>Headers\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Parameters.cpp">
+      <Filter>Headers\Parameter</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QTMosaicPiPL.rc">

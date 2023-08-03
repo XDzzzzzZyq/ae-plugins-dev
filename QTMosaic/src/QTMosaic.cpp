@@ -43,6 +43,7 @@
 */
 
 #include "QTMosaic.h"
+#include "Parameters.h"
 
 static PF_Err 
 About (	
@@ -55,10 +56,10 @@ About (
 	
 	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
 											"%s v%d.%d\r%s",
-											STR(StrID_Name), 
+											Parameters::GetPlugName(), 
 											MAJOR_VERSION, 
 											MINOR_VERSION, 
-											STR(StrID_Description));
+											Parameters::GetPlugDescription());
 	return PF_Err_NONE;
 }
 
@@ -76,6 +77,8 @@ GlobalSetup (
 										BUILD_VERSION);
 
 	out_data->out_flags =  PF_OutFlag_DEEP_COLOR_AWARE;	// just 16bpc, not 32bpc
+
+	Parameters::InitParameters();
 	
 	return PF_Err_NONE;
 }
@@ -92,7 +95,7 @@ ParamsSetup (
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_FLOAT_SLIDERX(	STR(StrID_Gain_Param_Name), 
+	PF_ADD_FLOAT_SLIDERX(	"Gain",
 							SKELETON_GAIN_MIN, 
 							SKELETON_GAIN_MAX, 
 							SKELETON_GAIN_MIN, 
@@ -101,17 +104,38 @@ ParamsSetup (
 							PF_Precision_HUNDREDTHS,
 							0,
 							0,
-							GAIN_DISK_ID);
+							Parameters::GetParamID("Gain"));
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_COLOR(	STR(StrID_Color_Param_Name), 
+	PF_ADD_COLOR(	"Color",
 					PF_HALF_CHAN8,
 					PF_MAX_CHAN8,
 					PF_MAX_CHAN8,
-					COLOR_DISK_ID);
+					Parameters::GetParamID("Color"));
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_FLOAT_SLIDERX(	"Count",
+							SKELETON_GAIN_MIN,
+							SKELETON_GAIN_MAX,
+							SKELETON_GAIN_MIN,
+							SKELETON_GAIN_MAX,
+							SKELETON_GAIN_DFLT,
+							PF_Precision_HUNDREDTHS,
+							0,
+							0,
+							Parameters::GetParamID("Count"));
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_CHECKBOX(	"Select",
+						"text",
+						false,
+						0,
+						Parameters::GetParamID("Select"));
 	
-	out_data->num_params = SKELETON_NUM_PARAMS;
+	out_data->num_params = Parameters::GetParamNum();
 
 	return err;
 }
@@ -126,7 +150,7 @@ MySimpleGainFunc16 (
 {
 	PF_Err		err = PF_Err_NONE;
 
-	GainInfo	*giP	= reinterpret_cast<GainInfo*>(refcon);
+	ParamData	*giP	= reinterpret_cast<ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 					
 	if (giP){
@@ -154,7 +178,7 @@ MySimpleGainFunc8 (
 {
 	PF_Err		err = PF_Err_NONE;
 
-	GainInfo	*giP	= reinterpret_cast<GainInfo*>(refcon);
+	ParamData	*giP	= reinterpret_cast<ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 					
 	if (giP){
@@ -183,12 +207,13 @@ Render (
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
 
 	/*	Put interesting code here. */
-	GainInfo			giP;
+	ParamData			giP;
 	AEFX_CLR_STRUCT(giP);
 	A_long				linesL	= 0;
 
 	linesL 		= output->extent_hint.bottom - output->extent_hint.top;
-	giP.gainF 	= params[SKELETON_GAIN]->u.fs_d.value;
+
+	giP.gainF 	= params[Parameters::GetParamID("Gain")]->u.fs_d.value;
 	
 	if (PF_WORLD_IS_DEEP(output)){
 		ERR(suites.Iterate16Suite2()->iterate(	in_data,

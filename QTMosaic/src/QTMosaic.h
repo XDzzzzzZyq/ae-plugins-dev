@@ -74,21 +74,21 @@ typedef short int			int16;
 #define	SKELETON_GAIN_MAX		100
 #define	SKELETON_GAIN_DFLT		10
 
-enum {
+#define ADD_PARAM(name) name, name##_ID = name
+
+enum Params{
 	SKELETON_INPUT = 0,
-	SKELETON_GAIN,
-	SKELETON_COLOR,
+
+	ADD_PARAM(GAIN),
+	ADD_PARAM(COLOR),
+	ADD_PARAM(P_COUNT),
+
 	SKELETON_NUM_PARAMS
 };
 
-enum {
-	GAIN_DISK_ID = 1,
-	COLOR_DISK_ID,
-};
-
-typedef struct GainInfo{
+typedef struct ParamData{
 	PF_FpLong	gainF;
-} GainInfo, *GainInfoP, **GainInfoH;
+} ParamData, *ParamDataP, **ParamDataH;
 
 
 extern "C" {

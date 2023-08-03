@@ -371,12 +371,14 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClInclude Include="$(SolutionDir)dep\Util\Param_Utils.h" />
     <ClInclude Include="$(SolutionDir)dep\Headers\PF_Masks.h" />
     <ClInclude Include="$(SolutionDir)dep\Util\String_Utils.h" />
+    <ClInclude Include="src\Parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
+    <ClCompile Include="src\Parameters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
