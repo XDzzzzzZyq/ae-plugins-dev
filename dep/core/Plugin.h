@@ -2,7 +2,7 @@
 
 #include "Parameters.h"
 
-#define PushParam(name, id) Plugin::plug_params.plug_param_list[name] = {id, NULL}
+#define PushParam(name) Plugin::plug_params.plug_param_list[name] = {(int32_t)Plugin::plug_params.plug_param_list.size(), NULL}
 
 class Plugin
 {
@@ -17,8 +17,8 @@ public:
 	static std::string plug_name;
 	static std::string plug_descr;
 
-	static char* GetPlugName();
-	static char* GetPlugDescription();
+	static std::string GetPlugName();
+	static std::string GetPlugDescription();
 
 public:
 

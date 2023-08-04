@@ -14,14 +14,14 @@ Plugin::Plugin(std::string name, std::string descr)
 std::string Plugin::plug_name;
 std::string Plugin::plug_descr;
 
-char* Plugin::GetPlugName()
+std::string Plugin::GetPlugName()
 {
-	return (char*)Plugin::plug_name.c_str();
+	return Plugin::plug_name;
 }
 
-char* Plugin::GetPlugDescription()
+std::string Plugin::GetPlugDescription()
 {
-	return (char*)Plugin::plug_descr.c_str();
+	return Plugin::plug_descr;
 }
 
 Parameters Plugin::plug_params;

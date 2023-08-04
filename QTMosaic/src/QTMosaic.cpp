@@ -49,13 +49,10 @@ Parameters::SetParamData<type>(paramname, dataname);
 
 void QTMosaic::ParamData::Update(PF_ParamDef** params)
 {
+	std::cout << "update\n";
+	AEFX_CLR_STRUCT(QTMosaic::render_param);
 	BindInput(gainF, "Gain", PF_FpLong, fs_d);
 }
-
-static QTMosaic plugin(
-	"Quad-Tree Mosaic",
-	"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq"
-);
 
 QTMosaic::ParamData QTMosaic::render_param;
 
@@ -67,13 +64,18 @@ About (
 	PF_LayerDef		*output )
 {
 	AEGP_SuiteHandler suites(in_data->pica_basicP);
+
+	static QTMosaic plugin(
+		"Quad-Tree Mosaic",
+		"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq"
+	);
 	
 	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
 											"%s v%d.%d\r%s",
-											QTMosaic::GetPlugName(),
+											QTMosaic::GetPlugName().c_str(),
 											MAJOR_VERSION, 
 											MINOR_VERSION, 
-											QTMosaic::GetPlugDescription());
+											QTMosaic::GetPlugDescription().c_str());
 
 	return PF_Err_NONE;
 }
@@ -91,13 +93,14 @@ GlobalSetup (
 										STAGE_VERSION, 
 										BUILD_VERSION);
 
-	out_data->out_flags =  PF_OutFlag_DEEP_COLOR_AWARE;	// just 16bpc, not 32bpc
-
-	PushParam("None", 0);
-	PushParam("Gain", 1);
-	PushParam("Color", 2);
-	PushParam("Count", 3);
-	PushParam("Select", 4);
+	out_data->out_flags =  PF_OutFlag_DEEP_COLOR_AWARE | PF_OutFlag_I_DO_DIALOG;	// just 16bpc, not 32bpc
+	out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
+	
+	PushParam("None");
+	PushParam("Gain");
+	PushParam("Color");
+	PushParam("Count");
+	PushParam("Select");
 	
 	return PF_Err_NONE;
 }
@@ -122,11 +125,11 @@ ParamsSetup (
 							SKELETON_GAIN_DFLT,
 							PF_Precision_HUNDREDTHS,
 							0,
-							0,
+							PF_ParamFlag_SUPERVISE,
 							Parameters::GetParamID("Gain"));
 
 	AEFX_CLR_STRUCT(def);
-
+	
 	PF_ADD_COLOR(	"Color",
 					PF_HALF_CHAN8,
 					PF_MAX_CHAN8,
@@ -143,7 +146,7 @@ ParamsSetup (
 							SKELETON_GAIN_DFLT,
 							PF_Precision_HUNDREDTHS,
 							0,
-							0,
+							PF_ParamFlag_SUPERVISE,
 							Parameters::GetParamID("Count"));
 
 	AEFX_CLR_STRUCT(def);
@@ -151,7 +154,7 @@ ParamsSetup (
 	PF_ADD_CHECKBOX(	"Select",
 						"text",
 						false,
-						0,
+						PF_ParamFlag_SUPERVISE,
 						Parameters::GetParamID("Select"));
 	
 	out_data->num_params = Parameters::GetParamNum();
@@ -171,10 +174,10 @@ MySimpleGainFunc16 (
 
 	if (refcon == nullptr) return err;
 
-	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
+	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 			
-	tempF = giP->gainF * PF_MAX_CHAN16 / 100.0;
+	tempF = QTMosaic::render_param.gainF * PF_MAX_CHAN16 / 100.0;
 	if (tempF > PF_MAX_CHAN16){
 		tempF = PF_MAX_CHAN16;
 	};
@@ -199,10 +202,10 @@ MySimpleGainFunc8 (
 
 	if (refcon == nullptr) return err;
 
-	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
+	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 	
-	tempF = giP->gainF * PF_MAX_CHAN8 / 100.0;
+	tempF = QTMosaic::render_param.gainF * PF_MAX_CHAN8 / 100.0;
 	if (tempF > PF_MAX_CHAN8){
 		tempF = PF_MAX_CHAN8;
 	};
@@ -226,13 +229,10 @@ Render (
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
 
 	/*	Put interesting code here. */
-	AEFX_CLR_STRUCT(QTMosaic::render_param);
+
 	A_long				linesL	= 0;
 
-	linesL 		= output->extent_hint.bottom - output->extent_hint.top;
-
-	//giP.gainF 	= params[Parameters::GetParamID("Gain")]->u.fs_d.value;
-	QTMosaic::render_param.Update(params);
+	linesL = output->extent_hint.bottom - output->extent_hint.top;
 
 	if (PF_WORLD_IS_DEEP(output)){
 		ERR(suites.Iterate16Suite2()->iterate(	in_data,
@@ -302,6 +302,10 @@ EffectMain(
 							params,
 							output);
 				break;
+
+			case PF_Cmd_DO_DIALOG:
+
+				break;
 				
 			case PF_Cmd_GLOBAL_SETUP:
 
@@ -321,10 +325,18 @@ EffectMain(
 				
 			case PF_Cmd_RENDER:
 
+				QTMosaic::render_param.Update(params);
 				err = Render(	in_data,
 								out_data,
 								params,
 								output);
+				break;
+
+			case PF_Cmd_USER_CHANGED_PARAM:
+				err = About(in_data,
+							out_data,
+							params,
+							output);
 				break;
 		}
 	}
