@@ -108,7 +108,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -163,7 +163,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -219,7 +219,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -274,7 +274,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -371,14 +371,14 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClInclude Include="$(SolutionDir)dep\Util\Param_Utils.h" />
     <ClInclude Include="$(SolutionDir)dep\Headers\PF_Masks.h" />
     <ClInclude Include="$(SolutionDir)dep\Util\String_Utils.h" />
-    <ClInclude Include="src\Parameters.h" />
+    <ClInclude Include="..\dep\core\Parameters.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
-    <ClCompile Include="src\Parameters.cpp" />
+    <ClCompile Include="..\dep\core\Parameters.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

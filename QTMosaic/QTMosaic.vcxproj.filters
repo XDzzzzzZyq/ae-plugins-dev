@@ -85,7 +85,7 @@
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h">
       <Filter>Headers\Main</Filter>
     </ClInclude>
-    <ClInclude Include="src\Parameters.h">
+    <ClInclude Include="..\dep\core\Parameters.h">
       <Filter>Headers\Parameter</Filter>
     </ClInclude>
   </ItemGroup>
@@ -102,7 +102,7 @@
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp">
       <Filter>Headers\Main</Filter>
     </ClCompile>
-    <ClCompile Include="src\Parameters.cpp">
+    <ClCompile Include="..\dep\core\Parameters.cpp">
       <Filter>Headers\Parameter</Filter>
     </ClCompile>
   </ItemGroup>
