@@ -74,21 +74,24 @@ typedef short int			int16;
 #define	SKELETON_GAIN_MAX		100
 #define	SKELETON_GAIN_DFLT		10
 
-#define ADD_PARAM(name) name, name##_ID = name
+#include "Plugin.h"
 
-enum Params{
-	SKELETON_INPUT = 0,
+class QTMosaic : public Plugin {
 
-	ADD_PARAM(GAIN),
-	ADD_PARAM(COLOR),
-	ADD_PARAM(P_COUNT),
+public:
 
-	SKELETON_NUM_PARAMS
+	typedef class ParamData {
+	public:
+		PF_FpLong	gainF;
+	public:
+		void Update();
+
+	} ParamData, * ParamDataP, ** ParamDataH;
+
+	static ParamData render_param;
+
+public:
 };
-
-typedef struct ParamData{
-	PF_FpLong	gainF;
-} ParamData, *ParamDataP, **ParamDataH;
 
 
 extern "C" {

@@ -372,6 +372,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClInclude Include="$(SolutionDir)dep\Headers\PF_Masks.h" />
     <ClInclude Include="$(SolutionDir)dep\Util\String_Utils.h" />
     <ClInclude Include="..\dep\core\Parameters.h" />
+    <ClInclude Include="..\dep\core\Plugin.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.cpp" />
@@ -379,6 +380,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
     <ClCompile Include="..\dep\core\Parameters.cpp" />
+    <ClCompile Include="..\dep\core\Plugin.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

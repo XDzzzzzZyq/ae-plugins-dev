@@ -43,7 +43,18 @@
 */
 
 #include "QTMosaic.h"
-#include "Parameters.h"
+
+void QTMosaic::ParamData::Update()
+{
+	gainF = Parameters::GetParamData<PF_FpLong>("Gain");
+}
+
+static Plugin plugin(
+	"Quad-Tree Mosaic",
+	"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq"
+);
+
+QTMosaic::ParamData QTMosaic::render_param;
 
 static PF_Err 
 About (	
@@ -56,10 +67,11 @@ About (
 	
 	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
 											"%s v%d.%d\r%s",
-											Parameters::GetPlugName(), 
+											Plugin::GetPlugName(), 
 											MAJOR_VERSION, 
 											MINOR_VERSION, 
-											Parameters::GetPlugDescription());
+											Plugin::GetPlugDescription());
+
 	return PF_Err_NONE;
 }
 
@@ -78,7 +90,11 @@ GlobalSetup (
 
 	out_data->out_flags =  PF_OutFlag_DEEP_COLOR_AWARE;	// just 16bpc, not 32bpc
 
-	Parameters::InitParameters();
+	PushParam("None", 0);
+	PushParam("Gain", 1);
+	PushParam("Color", 2);
+	PushParam("Count", 3);
+	PushParam("Select", 4);
 	
 	return PF_Err_NONE;
 }
@@ -150,9 +166,9 @@ MySimpleGainFunc16 (
 {
 	PF_Err		err = PF_Err_NONE;
 
-	ParamData	*giP	= reinterpret_cast<ParamData*>(refcon);
+	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
-					
+			
 	if (giP){
 		tempF = giP->gainF * PF_MAX_CHAN16 / 100.0;
 		if (tempF > PF_MAX_CHAN16){
@@ -178,9 +194,9 @@ MySimpleGainFunc8 (
 {
 	PF_Err		err = PF_Err_NONE;
 
-	ParamData	*giP	= reinterpret_cast<ParamData*>(refcon);
+	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
-					
+	
 	if (giP){
 		tempF = giP->gainF * PF_MAX_CHAN8 / 100.0;
 		if (tempF > PF_MAX_CHAN8){
@@ -207,30 +223,30 @@ Render (
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
 
 	/*	Put interesting code here. */
-	ParamData			giP;
-	AEFX_CLR_STRUCT(giP);
+	AEFX_CLR_STRUCT(QTMosaic::render_param);
 	A_long				linesL	= 0;
 
 	linesL 		= output->extent_hint.bottom - output->extent_hint.top;
 
-	giP.gainF 	= params[Parameters::GetParamID("Gain")]->u.fs_d.value;
-	
+	//giP.gainF 	= params[Parameters::GetParamID("Gain")]->u.fs_d.value;
+	Parameters::SetParamData<PF_FpLong>("Gain", params[Parameters::GetParamID("Gain")]->u.fs_d.value);
+	QTMosaic::render_param.Update();
 	if (PF_WORLD_IS_DEEP(output)){
 		ERR(suites.Iterate16Suite2()->iterate(	in_data,
 												0,								// progress base
 												linesL,							// progress final
-												&params[SKELETON_INPUT]->u.ld,	// src 
+												&params[0]->u.ld,				// src 
 												NULL,							// area - null for all pixels
-												(void*)&giP,					// refcon - your custom data pointer
+												(void*)&QTMosaic::render_param,	// refcon - your custom data pointer
 												MySimpleGainFunc16,				// pixel function pointer
 												output));
 	} else {
 		ERR(suites.Iterate8Suite2()->iterate(	in_data,
 												0,								// progress base
 												linesL,							// progress final
-												&params[SKELETON_INPUT]->u.ld,	// src 
+												&params[0]->u.ld,				// src 
 												NULL,							// area - null for all pixels
-												(void*)&giP,					// refcon - your custom data pointer
+												(void*)&QTMosaic::render_param,	// refcon - your custom data pointer
 												MySimpleGainFunc8,				// pixel function pointer
 												output));	
 	}

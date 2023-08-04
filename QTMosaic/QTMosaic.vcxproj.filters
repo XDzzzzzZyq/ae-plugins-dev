@@ -17,7 +17,7 @@
     <Filter Include="Headers\Main">
       <UniqueIdentifier>{831f0357-6954-4483-aea1-c2e543872df3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Headers\Parameter">
+    <Filter Include="Headers\Structure">
       <UniqueIdentifier>{529e945a-6b82-4518-bf99-1c3a84368db5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -80,13 +80,16 @@
       <Filter>Headers\AE</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectDir)src\QTMosaic_Strings.h">
-      <Filter>Headers\Parameter</Filter>
+      <Filter>Headers\Structure</Filter>
     </ClInclude>
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h">
       <Filter>Headers\Main</Filter>
     </ClInclude>
     <ClInclude Include="..\dep\core\Parameters.h">
-      <Filter>Headers\Parameter</Filter>
+      <Filter>Headers\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dep\core\Plugin.h">
+      <Filter>Headers\Structure</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,13 +100,16 @@
       <Filter>Supporting code</Filter>
     </ClCompile>
     <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp">
-      <Filter>Headers\Parameter</Filter>
+      <Filter>Headers\Structure</Filter>
     </ClCompile>
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp">
       <Filter>Headers\Main</Filter>
     </ClCompile>
     <ClCompile Include="..\dep\core\Parameters.cpp">
-      <Filter>Headers\Parameter</Filter>
+      <Filter>Headers\Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dep\core\Plugin.cpp">
+      <Filter>Headers\Structure</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
