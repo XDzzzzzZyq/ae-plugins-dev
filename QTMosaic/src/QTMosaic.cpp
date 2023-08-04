@@ -44,12 +44,15 @@
 
 #include "QTMosaic.h"
 
-void QTMosaic::ParamData::Update()
+#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type.value; \
+Parameters::SetParamData<type>(paramname, dataname);
+
+void QTMosaic::ParamData::Update(PF_ParamDef** params)
 {
-	gainF = Parameters::GetParamData<PF_FpLong>("Gain");
+	BindInput(gainF, "Gain", PF_FpLong, fs_d);
 }
 
-static Plugin plugin(
+static QTMosaic plugin(
 	"Quad-Tree Mosaic",
 	"An Quad-Tree based Mosaic postprocessing famity effects. \rCopyright XDzZyq"
 );
@@ -67,10 +70,10 @@ About (
 	
 	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
 											"%s v%d.%d\r%s",
-											Plugin::GetPlugName(), 
+											QTMosaic::GetPlugName(),
 											MAJOR_VERSION, 
 											MINOR_VERSION, 
-											Plugin::GetPlugDescription());
+											QTMosaic::GetPlugDescription());
 
 	return PF_Err_NONE;
 }
@@ -166,20 +169,20 @@ MySimpleGainFunc16 (
 {
 	PF_Err		err = PF_Err_NONE;
 
+	if (refcon == nullptr) return err;
+
 	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 			
-	if (giP){
-		tempF = giP->gainF * PF_MAX_CHAN16 / 100.0;
-		if (tempF > PF_MAX_CHAN16){
-			tempF = PF_MAX_CHAN16;
-		};
+	tempF = giP->gainF * PF_MAX_CHAN16 / 100.0;
+	if (tempF > PF_MAX_CHAN16){
+		tempF = PF_MAX_CHAN16;
+	};
 
-		outP->alpha		=	inP->alpha;
-		outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN16);
-		outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN16);
-		outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN16);
-	}
+	outP->alpha		=	inP->alpha;
+	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN16);
+	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN16);
+	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN16);
 
 	return err;
 }
@@ -194,20 +197,20 @@ MySimpleGainFunc8 (
 {
 	PF_Err		err = PF_Err_NONE;
 
+	if (refcon == nullptr) return err;
+
 	QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
 	PF_FpLong	tempF	= 0;
 	
-	if (giP){
-		tempF = giP->gainF * PF_MAX_CHAN8 / 100.0;
-		if (tempF > PF_MAX_CHAN8){
-			tempF = PF_MAX_CHAN8;
-		};
+	tempF = giP->gainF * PF_MAX_CHAN8 / 100.0;
+	if (tempF > PF_MAX_CHAN8){
+		tempF = PF_MAX_CHAN8;
+	};
 
-		outP->alpha		=	inP->alpha;
-		outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN8);
-		outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN8);
-		outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN8);
-	}
+	outP->alpha		=	inP->alpha;
+	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN8);
+	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN8);
+	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN8);
 
 	return err;
 }
@@ -229,8 +232,8 @@ Render (
 	linesL 		= output->extent_hint.bottom - output->extent_hint.top;
 
 	//giP.gainF 	= params[Parameters::GetParamID("Gain")]->u.fs_d.value;
-	Parameters::SetParamData<PF_FpLong>("Gain", params[Parameters::GetParamID("Gain")]->u.fs_d.value);
-	QTMosaic::render_param.Update();
+	QTMosaic::render_param.Update(params);
+
 	if (PF_WORLD_IS_DEEP(output)){
 		ERR(suites.Iterate16Suite2()->iterate(	in_data,
 												0,								// progress base

@@ -352,7 +352,6 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h" />
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h" />
-    <ClInclude Include="$(ProjectDir)src\QTMosaic_Strings.h" />
     <ClInclude Include="$(SolutionDir)dep\Headers\A.h" />
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_Effect.h" />
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_EffectCB.h" />
@@ -378,7 +377,6 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp" />
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp" />
-    <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp" />
     <ClCompile Include="..\dep\core\Parameters.cpp" />
     <ClCompile Include="..\dep\core\Plugin.cpp" />
   </ItemGroup>

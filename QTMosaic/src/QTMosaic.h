@@ -57,8 +57,6 @@ typedef short int			int16;
 #include "AEFX_ChannelDepthTpl.h"
 #include "AEGP_SuiteHandler.h"
 
-#include "QTMosaic_Strings.h"
-
 /* Versioning information */
 
 #define	MAJOR_VERSION	1
@@ -84,13 +82,16 @@ public:
 	public:
 		PF_FpLong	gainF;
 	public:
-		void Update();
+		void Update(PF_ParamDef** params);
 
 	} ParamData, * ParamDataP, ** ParamDataH;
 
 	static ParamData render_param;
 
 public:
+
+	QTMosaic(std::string name, std::string descr) : Plugin(name, descr) {};
+
 };
 
 

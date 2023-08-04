@@ -79,9 +79,6 @@
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h">
       <Filter>Headers\AE</Filter>
     </ClInclude>
-    <ClInclude Include="$(ProjectDir)src\QTMosaic_Strings.h">
-      <Filter>Headers\Structure</Filter>
-    </ClInclude>
     <ClInclude Include="$(ProjectDir)src\QTMosaic.h">
       <Filter>Headers\Main</Filter>
     </ClInclude>
@@ -98,9 +95,6 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp">
       <Filter>Supporting code</Filter>
-    </ClCompile>
-    <ClCompile Include="$(ProjectDir)src\QTMosaic_Strings.cpp">
-      <Filter>Headers\Structure</Filter>
     </ClCompile>
     <ClCompile Include="$(ProjectDir)src\QTMosaic.cpp">
       <Filter>Headers\Main</Filter>
