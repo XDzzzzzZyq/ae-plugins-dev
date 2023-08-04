@@ -1,2 +1,2 @@
-# QTPF plugins dev
-  Quad-tree based postprocessing family plugins for Adobe After Effects
+# ae plugins dev
+  plugins development for Adobe After Effects

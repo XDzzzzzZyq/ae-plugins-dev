@@ -49,7 +49,6 @@ Parameters::SetParamData<type>(paramname, dataname);
 
 void QTMosaic::ParamData::Update(PF_ParamDef** params)
 {
-	std::cout << "update\n";
 	AEFX_CLR_STRUCT(QTMosaic::render_param);
 	BindInput(gainF, "Gain", PF_FpLong, fs_d);
 }
