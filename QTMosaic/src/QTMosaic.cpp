@@ -70,7 +70,7 @@ About (
 	);
 	
 	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
-											"%s v%d.%d\r%s",
+											"%s v%d.%d\n\r%s",
 											QTMosaic::GetPlugName().c_str(),
 											MAJOR_VERSION, 
 											MINOR_VERSION, 
@@ -304,6 +304,10 @@ EffectMain(
 
 			case PF_Cmd_DO_DIALOG:
 
+				err = About(in_data,
+							out_data,
+							params,
+							output);
 				break;
 				
 			case PF_Cmd_GLOBAL_SETUP:
@@ -332,10 +336,6 @@ EffectMain(
 				break;
 
 			case PF_Cmd_USER_CHANGED_PARAM:
-				err = About(in_data,
-							out_data,
-							params,
-							output);
 				break;
 		}
 	}

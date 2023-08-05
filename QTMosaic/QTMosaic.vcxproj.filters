@@ -112,7 +112,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="$(ProjectDir)src\QTMosaicPiPL.r">
+    <CustomBuild Include="src\PiPL.r">
       <Filter>Resources</Filter>
     </CustomBuild>
   </ItemGroup>

@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2C8DED3E-111D-4272-A54A-F1865F02A90E}</ProjectGuid>
-    <RootNamespace>QTMosaicPiPL</RootNamespace>
+    <RootNamespace>PiPL</RootNamespace>
     <ProjectName>QTMosaic</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -102,7 +102,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/PiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -157,7 +157,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/PiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -213,7 +213,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/PiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -268,7 +268,7 @@
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\Debug/QTMosaicPiPL.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug/PiPL.tlb</TypeLibraryName>
       <HeaderFileName>
       </HeaderFileName>
     </Midl>
@@ -319,7 +319,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="$(ProjectDir)src\QTMosaicPiPL.r">
+    <CustomBuild Include="src\PiPL.r">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling the PiPL</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling the PiPL</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cl /I "$(SolutionDir)dep\Headers" /EP "$(ProjectDir)src\%(Filename).r" &gt; "$(IntDir)"\\"%(Filename).rr"
@@ -347,7 +347,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="QTMosaicPiPL.rc" />
+    <ResourceCompile Include="PiPL.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h" />

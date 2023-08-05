@@ -13,7 +13,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [2] */
 		Name {
-			"QuadTreeMosaic"
+			"Quad Tree Mosaic"
 		},
 		/* [3] */
 		Category {
