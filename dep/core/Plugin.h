@@ -3,6 +3,7 @@
 #include "Parameters.h"
 
 #define PushParam(name) Plugin::plug_params.plug_param_list[name] = {(int32_t)Plugin::plug_params.plug_param_list.size(), NULL}
+#define PushTopic(name, func) PushParam(name); func PushParam(name"_End")
 
 class Plugin
 {

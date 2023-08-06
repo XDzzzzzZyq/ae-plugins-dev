@@ -158,6 +158,13 @@ GlobalSetup(
 	PushParam("Block Color");
 	PushParam("Block Only");
 
+	PushTopic("Extrude",
+		PushParam("x");
+		PushParam("y");
+		PushParam("randomize");
+		PushParam("seed_exr");
+	);
+
 	return PF_Err_NONE;
 }
 
@@ -171,6 +178,10 @@ ParamsSetup(
 	PF_Err		err = PF_Err_NONE;
 	PF_ParamDef	def;
 
+
+
+
+
 	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_COLOR("Color",
@@ -179,13 +190,27 @@ ParamsSetup(
 		PF_MAX_CHAN8,
 		Parameters::GetParamID("Block Color"));
 
+
 	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_CHECKBOX("Block Only",
 		"only display blocks",
 		false,
-		PF_ParamFlag_SUPERVISE,
+		0,
 		Parameters::GetParamID("Block Only"));
+
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_TOPIC("Extrude", Parameters::GetParamID("Extrude"));
+
+	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x"));
+	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y"));
+	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize"));
+	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_exr"));
+
+	PF_END_TOPIC(Parameters::GetParamID("Extrude_End"));
+
 
 	out_data->num_params = Parameters::GetParamNum();
 
