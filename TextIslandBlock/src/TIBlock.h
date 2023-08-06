@@ -84,11 +84,12 @@ public:
 	public:
 		
 		// paramaters
-		PF_FpLong	gainF;
+		PF_Pixel color;
+		A_long block_only;
 
 
 		// text info
-		A_long count;
+		std::vector<Block> blocks;
 
 	public:
 
@@ -99,6 +100,7 @@ public:
 
 	static ParamData render_param;
 	static AEGP_LayerH layerPH;
+	static AEGP_TextOutlinesH outlinesPH;
 
 public:
 
@@ -126,4 +128,4 @@ extern "C" {
 
 }
 
-#endif // SKELETON_H
+#endif

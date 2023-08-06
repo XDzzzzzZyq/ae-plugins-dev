@@ -19,11 +19,11 @@
 /*                                                                 */
 /*******************************************************************/
 
-/*	Skeleton.cpp	
+/*	Skeleton.cpp
 
 	This is a compiling husk of a project. Fill it in with interesting
 	pixel processing code.
-	
+
 	Revision History
 
 	Version		Change													Engineer	Date
@@ -31,7 +31,7 @@
 	1.0			(seemed like a good idea at the time)					bbb			6/1/2002
 
 	1.0			Okay, I'm leaving the version at 1.0,					bbb			2/15/2006
-				for obvious reasons; you're going to 
+				for obvious reasons; you're going to
 				copy these files directly! This is the
 				first XCode version, though.
 
@@ -44,13 +44,14 @@
 
 #include "TIBlock.h"
 
-#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type.value; \
+#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type; \
 Parameters::SetParamData<type>(paramname, dataname);
 
 void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 {
 	AEFX_CLR_STRUCT(TIBlock::render_param);
-	BindInput(gainF, "Gain", PF_FpLong, fs_d);
+	BindInput(color, "Block Color", PF_Pixel, cd.value);
+	BindInput(block_only, "Block Only", A_long, bd.value);
 }
 
 void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
@@ -61,30 +62,64 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 		in_data->effect_ref,
 		&TIBlock::layerPH);
 
-	AEGP_TextOutlinesH outlinesPH{};
 	suites.TextLayerSuite1()->AEGP_GetNewTextOutlines(
 		TIBlock::layerPH,
 		(const A_Time*)&in_data->time_step,
-		&outlinesPH);
+		&TIBlock::outlinesPH);
 
+	A_long count{};
 	suites.TextLayerSuite1()->AEGP_GetNumTextOutlines(
-		outlinesPH,
-		&TIBlock::render_param.count
+		TIBlock::outlinesPH,
+		&count
 	);
 
-	std::cout << TIBlock::render_param.count << "\n";
+	TIBlock::render_param.blocks.resize(count);
+
+	for (A_long i = 0; i < count; i++) {
+		PF_PathOutlinePtr pathPP{};
+		suites.TextLayerSuite1()->AEGP_GetIndexedTextOutline(
+			TIBlock::outlinesPH,
+			i,
+			&pathPP);
+
+		A_long nums{};
+		suites.PathDataSuite1()->PF_PathNumSegments(
+			in_data->effect_ref,
+			pathPP,
+			&nums);
+
+		for (A_long j = 0; j < nums; j++) {
+			PF_PathVertex vert{};
+			suites.PathDataSuite1()->PF_PathVertexInfo(
+				in_data->effect_ref,
+				pathPP,
+				j,
+				&vert);
+
+			const glm::vec2 b_vert{ vert.x, vert.y };
+			TIBlock::render_param.blocks.at(i).UpdateMin(b_vert);
+			TIBlock::render_param.blocks.at(i).UpdateMax(b_vert);
+
+			//std::cout << vert.x << ", " << vert.y << "\n";
+		}
+
+		//std::cout << TIBlock::render_param.blocks.at(i) << "\n";
+	}
+	//std::cout << "end\n";
 }
 
 TIBlock::ParamData TIBlock::render_param;
 
 AEGP_LayerH TIBlock::layerPH = nullptr;
 
-static PF_Err 
-About (	
-	PF_InData		*in_data,
-	PF_OutData		*out_data,
-	PF_ParamDef		*params[],
-	PF_LayerDef		*output )
+AEGP_TextOutlinesH TIBlock::outlinesPH = nullptr;
+
+static PF_Err
+About(
+	PF_InData* in_data,
+	PF_OutData* out_data,
+	PF_ParamDef* params[],
+	PF_LayerDef* output)
 {
 	AEGP_SuiteHandler suites(in_data->pica_basicP);
 
@@ -92,189 +127,172 @@ About (
 		"Text Island Block",
 		"Quick blocks generator for text islands. \rCopyright XDzZyq"
 	);
-	
-	suites.ANSICallbacksSuite1()->sprintf(	out_data->return_msg,
-											"%s v%d.%d\n\r%s",
-											TIBlock::GetPlugName().c_str(),
-											MAJOR_VERSION, 
-											MINOR_VERSION, 
-											TIBlock::GetPlugDescription().c_str());
+
+	suites.ANSICallbacksSuite1()->sprintf(out_data->return_msg,
+		"%s v%d.%d\n\r%s",
+		TIBlock::GetPlugName().c_str(),
+		MAJOR_VERSION,
+		MINOR_VERSION,
+		TIBlock::GetPlugDescription().c_str());
 
 	return PF_Err_NONE;
 }
 
-static PF_Err 
-GlobalSetup (	
-	PF_InData		*in_data,
-	PF_OutData		*out_data,
-	PF_ParamDef		*params[],
-	PF_LayerDef		*output )
+static PF_Err
+GlobalSetup(
+	PF_InData* in_data,
+	PF_OutData* out_data,
+	PF_ParamDef* params[],
+	PF_LayerDef* output)
 {
-	out_data->my_version = PF_VERSION(	MAJOR_VERSION, 
-										MINOR_VERSION,
-										BUG_VERSION, 
-										STAGE_VERSION, 
-										BUILD_VERSION);
+	out_data->my_version = PF_VERSION(MAJOR_VERSION,
+		MINOR_VERSION,
+		BUG_VERSION,
+		STAGE_VERSION,
+		BUILD_VERSION);
 
-	out_data->out_flags =  PF_OutFlag_DEEP_COLOR_AWARE | PF_OutFlag_I_DO_DIALOG;	// just 16bpc, not 32bpc
+	out_data->out_flags = PF_OutFlag_DEEP_COLOR_AWARE | PF_OutFlag_I_DO_DIALOG;	// just 16bpc, not 32bpc
 	out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
-	
+
 	PushParam("None");
-	PushParam("Gain");
-	PushParam("Color");
-	PushParam("Count");
-	PushParam("Select");
-	
+	PushParam("Block Color");
+	PushParam("Block Only");
+
 	return PF_Err_NONE;
 }
 
-static PF_Err 
-ParamsSetup (	
-	PF_InData		*in_data,
-	PF_OutData		*out_data,
-	PF_ParamDef		*params[],
-	PF_LayerDef		*output )
+static PF_Err
+ParamsSetup(
+	PF_InData* in_data,
+	PF_OutData* out_data,
+	PF_ParamDef* params[],
+	PF_LayerDef* output)
 {
-	PF_Err		err		= PF_Err_NONE;
-	PF_ParamDef	def;	
+	PF_Err		err = PF_Err_NONE;
+	PF_ParamDef	def;
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_FLOAT_SLIDERX(	"Gain",
-							SKELETON_GAIN_MIN, 
-							SKELETON_GAIN_MAX, 
-							SKELETON_GAIN_MIN, 
-							SKELETON_GAIN_MAX, 
-							SKELETON_GAIN_DFLT,
-							PF_Precision_HUNDREDTHS,
-							0,
-							PF_ParamFlag_SUPERVISE,
-							Parameters::GetParamID("Gain"));
-
-	AEFX_CLR_STRUCT(def);
-	
-	PF_ADD_COLOR(	"Color",
-					PF_HALF_CHAN8,
-					PF_MAX_CHAN8,
-					PF_MAX_CHAN8,
-					Parameters::GetParamID("Color"));
+	PF_ADD_COLOR("Color",
+		PF_HALF_CHAN8,
+		PF_MAX_CHAN8,
+		PF_MAX_CHAN8,
+		Parameters::GetParamID("Block Color"));
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_FLOAT_SLIDERX(	"Count",
-							SKELETON_GAIN_MIN,
-							SKELETON_GAIN_MAX,
-							SKELETON_GAIN_MIN,
-							SKELETON_GAIN_MAX,
-							SKELETON_GAIN_DFLT,
-							PF_Precision_HUNDREDTHS,
-							0,
-							PF_ParamFlag_SUPERVISE,
-							Parameters::GetParamID("Count"));
+	PF_ADD_CHECKBOX("Block Only",
+		"only display blocks",
+		false,
+		PF_ParamFlag_SUPERVISE,
+		Parameters::GetParamID("Block Only"));
 
-	AEFX_CLR_STRUCT(def);
-
-	PF_ADD_CHECKBOX(	"Select",
-						"text",
-						false,
-						PF_ParamFlag_SUPERVISE,
-						Parameters::GetParamID("Select"));
-	
 	out_data->num_params = Parameters::GetParamNum();
 
 	return err;
 }
 
 static PF_Err
-MySimpleGainFunc16 (
-	void		*refcon, 
-	A_long		xL, 
-	A_long		yL, 
-	PF_Pixel16	*inP, 
-	PF_Pixel16	*outP)
+Copy8(
+	void* refcon,
+	A_long		xL,
+	A_long		yL,
+	PF_Pixel8* inP,
+	PF_Pixel8* outP)
 {
 	PF_Err		err = PF_Err_NONE;
 
-	if (refcon == nullptr) return err;
-
-	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
-	PF_FpLong	tempF	= 0;
-			
-	tempF = TIBlock::render_param.gainF * PF_MAX_CHAN16 / 100.0;
-	if (tempF > PF_MAX_CHAN16){
-		tempF = PF_MAX_CHAN16;
-	};
-
-	outP->alpha		=	inP->alpha;
-	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN16);
-	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN16);
-	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN16);
+	outP->alpha = inP->alpha;
+	outP->red	= inP->red;
+	outP->green = inP->green;
+	outP->blue	= inP->blue;
 
 	return err;
 }
 
 static PF_Err
-MySimpleGainFunc8 (
-	void		*refcon, 
-	A_long		xL, 
-	A_long		yL, 
-	PF_Pixel8	*inP, 
-	PF_Pixel8	*outP)
+BlockFill(
+	void* refcon,
+	A_long		xL,
+	A_long		yL,
+	PF_Pixel8* inP,
+	PF_Pixel8* outP)
 {
 	PF_Err		err = PF_Err_NONE;
 
-	if (refcon == nullptr) return err;
+	const double frac = (double)inP->alpha / (double)255;
 
-	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
-	PF_FpLong	tempF	= 0;
+	if (TIBlock::render_param.block_only == 0) {
+
+		outP->alpha = 255;
+		outP->red = (A_u_char)(TIBlock::render_param.color.red * (1.0 - frac) + inP->red * frac);
+		outP->green = (A_u_char)(TIBlock::render_param.color.green * (1.0 - frac) + inP->green * frac);
+		outP->blue = (A_u_char)(TIBlock::render_param.color.blue * (1.0 - frac) + inP->blue * frac);
 	
-	tempF = TIBlock::render_param.gainF * PF_MAX_CHAN8 / 100.0;
-	if (tempF > PF_MAX_CHAN8){
-		tempF = PF_MAX_CHAN8;
-	};
+	}
+	else {
+	
+		outP->alpha = 255;
+		outP->red = TIBlock::render_param.color.red;
+		outP->green = TIBlock::render_param.color.green;
+		outP->blue = TIBlock::render_param.color.blue;
+	
+	}
 
-	outP->alpha		=	inP->alpha;
-	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN8);
-	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN8);
-	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN8);
 
 	return err;
 }
 
 static PF_Err  // int32_t
-Render (
-	PF_InData		*in_data,
-	PF_OutData		*out_data,
-	PF_ParamDef		*params[],
-	PF_LayerDef		*output )
+Render(
+	PF_InData* in_data,
+	PF_OutData* out_data,
+	PF_ParamDef* params[],
+	PF_LayerDef* output)
 {
-	PF_Err				err		= PF_Err_NONE;
+	PF_Err				err = PF_Err_NONE;
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
 
 	/*	Put interesting code here. */
 
-	A_long				linesL	= 0;
+	A_long				linesL = 0;
 
 	linesL = output->extent_hint.bottom - output->extent_hint.top;
 
-	if (PF_WORLD_IS_DEEP(output)){
-		ERR(suites.Iterate16Suite2()->iterate(	in_data,
-												0,								// progress base
-												linesL,							// progress final
-												&params[0]->u.ld,				// src 
-												NULL,							// area - null for all pixels
-												(void*)&TIBlock::render_param,	// refcon - your custom data pointer
-												MySimpleGainFunc16,				// pixel function pointer
-												output));
-	} else {
-		ERR(suites.Iterate8Suite2()->iterate(	in_data,
-												0,								// progress base
-												linesL,							// progress final
-												&params[0]->u.ld,				// src 
-												NULL,							// area - null for all pixels
-												(void*)&TIBlock::render_param,	// refcon - your custom data pointer
-												MySimpleGainFunc8,				// pixel function pointer
-												output));	
+	// copy
+
+	if (TIBlock::render_param.block_only == 0) {
+
+		ERR(suites.Iterate8Suite2()->iterate(
+			
+			in_data,
+			0,								// progress base
+			linesL,							// progress final
+			&params[0]->u.ld,				// src 
+			NULL,							// area - null for all pixels
+			nullptr,						// refcon - your custom data pointer
+			Copy8,							// pixel function pointer
+			output));
+
+	}
+
+	// fill the blocks
+
+	for (auto& block : TIBlock::render_param.blocks) {
+	
+		const PF_Rect area{ (A_long)block.b_min.x, (A_long)block.b_min.y, (A_long)block.b_max.x + 1, (A_long)block.b_max.y + 1 };
+
+		ERR(suites.Iterate8Suite2()->iterate(
+			
+			in_data,
+			0,								// progress base
+			linesL,							// progress final
+			output,							// src 
+			&area,							// area - null for all pixels
+			nullptr,						// refcon - your custom data pointer
+			BlockFill,						// pixel function pointer
+			output));
+
 	}
 
 	return err;
@@ -285,7 +303,7 @@ extern "C" DllExport
 PF_Err PluginDataEntryFunction2(
 	PF_PluginDataPtr inPtr,
 	PF_PluginDataCB2 inPluginDataCallBackPtr,
-	SPBasicSuite* inSPBasicSuitePtr,
+	SPBasicSuite * inSPBasicSuitePtr,
 	const char* inHostName,
 	const char* inHostVersion)
 {
@@ -308,64 +326,64 @@ PF_Err PluginDataEntryFunction2(
 PF_Err
 EffectMain(
 	PF_Cmd			cmd,
-	PF_InData		*in_data,
-	PF_OutData		*out_data,
-	PF_ParamDef		*params[],
-	PF_LayerDef		*output,
-	void			*extra)
+	PF_InData* in_data,
+	PF_OutData* out_data,
+	PF_ParamDef* params[],
+	PF_LayerDef* output,
+	void* extra)
 {
 	PF_Err		err = PF_Err_NONE;
-	
+
 	try {
 		switch (cmd) {
-			case PF_Cmd_ABOUT:
+		case PF_Cmd_ABOUT:
 
-				err = About(in_data,
-							out_data,
-							params,
-							output);
-				break;
+			err = About(in_data,
+				out_data,
+				params,
+				output);
+			break;
 
-			case PF_Cmd_DO_DIALOG:
+		case PF_Cmd_DO_DIALOG:
 
-				err = About(in_data,
-							out_data,
-							params,
-							output);
-				break;
-				
-			case PF_Cmd_GLOBAL_SETUP:
+			err = About(in_data,
+				out_data,
+				params,
+				output);
+			break;
 
-				err = GlobalSetup(	in_data,
-									out_data,
-									params,
-									output);
-				break;
-				
-			case PF_Cmd_PARAMS_SETUP:
+		case PF_Cmd_GLOBAL_SETUP:
 
-				err = ParamsSetup(	in_data,
-									out_data,
-									params,
-									output);
-				break;
-				
-			case PF_Cmd_RENDER:
+			err = GlobalSetup(in_data,
+				out_data,
+				params,
+				output);
+			break;
 
-				TIBlock::render_param.UpdateParam(in_data, params);
-				TIBlock::render_param.UpdateBlock(in_data, params);
+		case PF_Cmd_PARAMS_SETUP:
 
-				err = Render(	in_data,
-								out_data,
-								params,
-								output);
-				break;
+			err = ParamsSetup(in_data,
+				out_data,
+				params,
+				output);
+			break;
 
-			case PF_Cmd_USER_CHANGED_PARAM:
-				break;
+		case PF_Cmd_RENDER:
+
+			TIBlock::render_param.UpdateParam(in_data, params);
+			TIBlock::render_param.UpdateBlock(in_data, params);
+
+			err = Render(in_data,
+				out_data,
+				params,
+				output);
+			break;
+
+		case PF_Cmd_USER_CHANGED_PARAM:
+			break;
 		}
 	}
-	catch(PF_Err &thrown_err){
+	catch (PF_Err& thrown_err) {
 		err = thrown_err;
 	}
 	return err;
