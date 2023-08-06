@@ -108,7 +108,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;$(SolutionDir)dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -163,7 +163,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;$(SolutionDir)dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -219,7 +219,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;$(SolutionDir)dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -274,7 +274,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\Headers;$(SolutionDir)dep\Headers\SP;$(SolutionDir)dep\Headers\Win;$(SolutionDir)dep\Resources;$(SolutionDir)dep\Util;$(SolutionDir)dep\core;$(SolutionDir)dep\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -350,27 +350,9 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ResourceCompile Include="PiPL.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_PluginData.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\A.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_Effect.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_EffectCB.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_EffectCBSuites.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_EffectSuites.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\AE_EffectSuitesHelper.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_EffectUI.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_GeneralPlug.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_GeneralPlugOld.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_IO.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\AE_Macros.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\AEFX_ChannelDepthTpl.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\entry.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\FIEL_Public.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\Param_Utils.h" />
-    <ClInclude Include="$(SolutionDir)dep\Headers\PF_Masks.h" />
-    <ClInclude Include="$(SolutionDir)dep\Util\String_Utils.h" />
     <ClInclude Include="..\dep\core\Parameters.h" />
     <ClInclude Include="..\dep\core\Plugin.h" />
+    <ClInclude Include="src\Block.h" />
     <ClInclude Include="src\TIBlock.h" />
   </ItemGroup>
   <ItemGroup>
@@ -378,6 +360,8 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="$(SolutionDir)dep\Util\MissingSuiteError.cpp" />
     <ClCompile Include="..\dep\core\Parameters.cpp" />
     <ClCompile Include="..\dep\core\Plugin.cpp" />
+    <ClCompile Include="..\dep\Util\Smart_Utils.cpp" />
+    <ClCompile Include="src\Block.cpp" />
     <ClCompile Include="src\TIBlock.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -56,6 +56,7 @@ typedef short int			int16;
 #include "AE_GeneralPlug.h"
 #include "AEFX_ChannelDepthTpl.h"
 #include "AEGP_SuiteHandler.h"
+#include "Smart_Utils.h"
 
 /* Versioning information */
 
@@ -73,6 +74,7 @@ typedef short int			int16;
 #define	SKELETON_GAIN_DFLT		10
 
 #include "Plugin.h"
+#include "Block.h"
 
 class TIBlock : public Plugin {
 
@@ -80,17 +82,32 @@ public:
 
 	typedef class ParamData {
 	public:
+		
+		// paramaters
 		PF_FpLong	gainF;
+
+
+		// text info
+		A_long count;
+
 	public:
-		void Update(PF_ParamDef** params);
+
+		void UpdateParam(PF_InData* in_data, PF_ParamDef** params);
+		void UpdateBlock(PF_InData* in_data, PF_ParamDef** params);
 
 	} ParamData, * ParamDataP, ** ParamDataH;
 
 	static ParamData render_param;
+	static AEGP_LayerH layerPH;
 
 public:
 
 	TIBlock(std::string name, std::string descr) : Plugin(name, descr) {};
+
+public:
+
+	void CheckIn(PF_InData* in_data, PF_ParamDef** params);
+	void CheckOut(PF_InData* in_data, PF_ParamDef** params);
 
 };
 

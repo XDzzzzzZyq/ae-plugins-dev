@@ -47,13 +47,37 @@
 #define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type.value; \
 Parameters::SetParamData<type>(paramname, dataname);
 
-void TIBlock::ParamData::Update(PF_ParamDef** params)
+void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 {
 	AEFX_CLR_STRUCT(TIBlock::render_param);
 	BindInput(gainF, "Gain", PF_FpLong, fs_d);
 }
 
+void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
+{
+	AEGP_SuiteHandler suites(in_data->pica_basicP);
+
+	suites.PFInterfaceSuite1()->AEGP_GetEffectLayer(
+		in_data->effect_ref,
+		&TIBlock::layerPH);
+
+	AEGP_TextOutlinesH outlinesPH{};
+	suites.TextLayerSuite1()->AEGP_GetNewTextOutlines(
+		TIBlock::layerPH,
+		(const A_Time*)&in_data->time_step,
+		&outlinesPH);
+
+	suites.TextLayerSuite1()->AEGP_GetNumTextOutlines(
+		outlinesPH,
+		&TIBlock::render_param.count
+	);
+
+	std::cout << TIBlock::render_param.count << "\n";
+}
+
 TIBlock::ParamData TIBlock::render_param;
+
+AEGP_LayerH TIBlock::layerPH = nullptr;
 
 static PF_Err 
 About (	
@@ -328,7 +352,9 @@ EffectMain(
 				
 			case PF_Cmd_RENDER:
 
-				TIBlock::render_param.Update(params);
+				TIBlock::render_param.UpdateParam(in_data, params);
+				TIBlock::render_param.UpdateBlock(in_data, params);
+
 				err = Render(	in_data,
 								out_data,
 								params,
