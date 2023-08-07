@@ -15,6 +15,7 @@ public:
 
 public:
 
+	bool b_invert{ false };
 	glm::vec2 b_min{ 9999 };
 	glm::vec2 b_max{ .0   };
 

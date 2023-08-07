@@ -53,6 +53,7 @@ void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 
 	BindInput(color, "Block Color", PF_Pixel, cd.value);
 	BindInput(block_only, "Block Only", A_long, bd.value);
+	BindInput(hole_exclude, "Exclude Inv", A_long, bd.value);
 
 	BindInput(x_exr, "x_exr", PF_FpLong, fs_d.value);
 	BindInput(y_exr, "y_exr", PF_FpLong, fs_d.value);
@@ -109,6 +110,7 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 			pathPP,
 			&nums);
 
+		std::vector<glm::vec2> verts(nums);
 		for (A_long j = 0; j < nums; j++) {
 			PF_PathVertex vert{};
 			suites.PathDataSuite1()->PF_PathVertexInfo(
@@ -118,12 +120,16 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 				&vert);
 
 			const glm::vec2 b_vert{ vert.x, vert.y };
+
 			TIBlock::render_param.blocks.at(i).UpdateMin(b_vert);
 			TIBlock::render_param.blocks.at(i).UpdateMax(b_vert);
 
+			verts.at(j) = b_vert;
 			//std::cout << vert.x << ", " << vert.y << "\n";
 		}
-
+		
+		if(TIBlock::render_param.hole_exclude)
+			TIBlock::render_param.blocks.at(i).b_invert = is_invert(verts);
 		//std::cout << TIBlock::render_param.blocks.at(i) << "\n";
 	}
 	//std::cout << "end\n";
@@ -178,6 +184,7 @@ GlobalSetup(
 	PushParam("None");
 	PushParam("Block Color");
 	PushParam("Block Only");
+	PushParam("Exclude Inv");
 
 	PushTopic("Extrude",
 		PushParam("x_exr");
@@ -238,7 +245,16 @@ ParamsSetup(
 		"only display blocks",
 		false,
 		0,
-		Parameters::GetParamID("Block Only"));
+		Parameters::GetParamID("Exclude Inv"));
+
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_CHECKBOX("inner exclude",
+		"exclude inner holes",
+		true,
+		0,
+		Parameters::GetParamID("Exclude Inv"));
 
 
 	AEFX_CLR_STRUCT(def);
@@ -267,7 +283,7 @@ ParamsSetup(
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_TOPIC("ReColor", Parameters::GetParamID("ReColor"));
+	PF_ADD_TOPIC("Random Colorize (future)", Parameters::GetParamID("ReColor"));
 
 	PF_ADD_COLOR("color2", PF_HALF_CHAN8, PF_MAX_CHAN8, PF_MAX_CHAN8, Parameters::GetParamID("color2"));
 	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_col"));
@@ -303,10 +319,12 @@ Copy8(
 {
 	PF_Err		err = PF_Err_NONE;
 
-	outP->alpha = inP->alpha;
-	outP->red	= inP->red;
-	outP->green = inP->green;
-	outP->blue	= inP->blue;
+	const double frac = (double)inP->alpha / (double)255;
+
+	outP->alpha =	(A_u_char)(255*(1-(255-inP->alpha)/255.0 * (255 - outP->alpha) / 255.0));
+	outP->red =		(A_u_char)(outP->red * (1.0 - frac) + inP->red * frac);
+	outP->green =	(A_u_char)(outP->green * (1.0 - frac) + inP->green * frac);
+	outP->blue =	(A_u_char)(outP->blue * (1.0 - frac) + inP->blue * frac);
 
 	return err;
 }
@@ -321,25 +339,25 @@ BlockFill(
 {
 	PF_Err		err = PF_Err_NONE;
 
-	const double frac = (double)inP->alpha / (double)255;
+	outP->alpha = 255;
+	outP->red = TIBlock::render_param.color.red;
+	outP->green = TIBlock::render_param.color.green;
+	outP->blue = TIBlock::render_param.color.blue;
 
-	if (TIBlock::render_param.block_only == 0) {
+	return err;
+}
 
-		outP->alpha = 255;
-		outP->red = (A_u_char)(TIBlock::render_param.color.red * (1.0 - frac) + inP->red * frac);
-		outP->green = (A_u_char)(TIBlock::render_param.color.green * (1.0 - frac) + inP->green * frac);
-		outP->blue = (A_u_char)(TIBlock::render_param.color.blue * (1.0 - frac) + inP->blue * frac);
-	
-	}
-	else {
-	
-		outP->alpha = 255;
-		outP->red = TIBlock::render_param.color.red;
-		outP->green = TIBlock::render_param.color.green;
-		outP->blue = TIBlock::render_param.color.blue;
-	
-	}
+static PF_Err
+Exclude8(
+	void* refcon,
+	A_long		xL,
+	A_long		yL,
+	PF_Pixel8* inP,
+	PF_Pixel8* outP)
+{
+	PF_Err		err = PF_Err_NONE;
 
+	outP->alpha = 0;
 
 	return err;
 }
@@ -353,7 +371,7 @@ PF_Rect CalcBlockArea(Block& block, int index) {
 	const double begin	= (double)TIBlock::render_param.begin_xcl / 100.;
 	const double end	= (double)TIBlock::render_param.end_xcl   / 100.;
 	const int max_index = (int)TIBlock::render_param.blocks.size() - 1;
-	std::cout << index << "\n";
+	//std::cout << index << "\n";
 	if (index < max_index * begin || index > max_index * end)
 		return { 0, 0, 0, 0 };
 
@@ -362,7 +380,7 @@ PF_Rect CalcBlockArea(Block& block, int index) {
 
 	const double rand_xcl = (double)TIBlock::render_param.rand_xcl / 100.;
 	if (rand_xcl != 0) {
-		const auto seed_xcl = TIBlock::render_param.seed_xcl;
+		const auto seed_xcl = TIBlock::render_param.seed_xcl + 1.3;
 		if(hash01(rand, rand * seed_xcl) < rand_xcl)
 			return { 0, 0, 0, 0 };
 	}
@@ -370,7 +388,7 @@ PF_Rect CalcBlockArea(Block& block, int index) {
 	const float rand_exr = (float)TIBlock::render_param.rand_exr / 100.f;
 	glm::vec2 exr = { TIBlock::render_param.x_exr, TIBlock::render_param.y_exr };
 	if (rand_exr != 0) {
-		const auto seed_exr = TIBlock::render_param.seed_exr;
+		const auto seed_exr = TIBlock::render_param.seed_exr + 1.3;
 		const glm::vec2 rand_off_exr = 2.0f * glm::vec2(hash01(rand, rand + seed_exr), hash01(rand, rand * seed_exr + seed_exr)) - 1.0f;
 
 		exr = glm::mix(exr, rand_off_exr*exr, rand_exr);
@@ -380,7 +398,7 @@ PF_Rect CalcBlockArea(Block& block, int index) {
 	const float rand_off = (float)TIBlock::render_param.rand_off / 100.f;
 	glm::vec2 off = { TIBlock::render_param.x_off, TIBlock::render_param.y_off };
 	if (rand_off != 0) {
-		const auto seed_off = TIBlock::render_param.seed_off;
+		const auto seed_off = TIBlock::render_param.seed_off + 1.3;
 		const glm::vec2 rand_off_off = 2.0f * glm::vec2(hash01(rand, rand * seed_off), hash01(rand, rand * seed_off + seed_off)) - 1.0f;
 
 		off = glm::mix(off, rand_off_off * off, rand_off);
@@ -407,27 +425,15 @@ Render(
 
 	linesL = output->extent_hint.bottom - output->extent_hint.top;
 
-	// copy
-
-	if (TIBlock::render_param.block_only == 0) {
-
-		ERR(suites.Iterate8Suite2()->iterate(
-			
-			in_data,
-			0,								// progress base
-			linesL,							// progress final
-			&params[0]->u.ld,				// src 
-			NULL,							// area - null for all pixels
-			nullptr,						// refcon - your custom data pointer
-			Copy8,							// pixel function pointer
-			output));
-
-	}
-
 	// fill the blocks
 
 	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
 	
+		if (block.b_invert && TIBlock::render_param.hole_exclude) {
+			i++;
+			continue;
+		}
+
 		const PF_Rect area = CalcBlockArea(block, i++);
 
 		if(area.right == 0 && area.bottom == 0) continue;
@@ -442,6 +448,48 @@ Render(
 			nullptr,						// refcon - your custom data pointer
 			BlockFill,						// pixel function pointer
 			output));
+	}
+
+	// exclude the blocks
+
+	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
+
+		if (!block.b_invert || !TIBlock::render_param.hole_exclude) {
+			i++;
+			continue;
+		}
+
+		const PF_Rect area = CalcBlockArea(block, i++);
+
+		if (area.right == 0 && area.bottom == 0) continue;
+
+		ERR(suites.Iterate8Suite2()->iterate(
+
+			in_data,
+			0,								// progress base
+			linesL,							// progress final
+			output,							// src 
+			&area,							// area - null for all pixels
+			nullptr,						// refcon - your custom data pointer
+			Exclude8,						// pixel function pointer
+			output));
+	}
+
+	// copy
+
+	if (TIBlock::render_param.block_only == 0) {
+
+		ERR(suites.Iterate8Suite2()->iterate(
+
+			in_data,
+			0,								// progress base
+			linesL,							// progress final
+			&params[0]->u.ld,				// src 
+			NULL,							// area - null for all pixels
+			nullptr,						// refcon - your custom data pointer
+			Copy8,							// pixel function pointer
+			output));
+
 	}
 
 	return err;
