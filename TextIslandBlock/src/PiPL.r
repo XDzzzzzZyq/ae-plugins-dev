@@ -57,7 +57,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [11] */
 		AE_Effect_Match_Name {
-			"ADBE TIBlock"
+			"XDZZYQ TIBlock"
 		},
 		/* [12] */
 		AE_Reserved_Info {
@@ -65,7 +65,7 @@ resource 'PiPL' (16000) {
 		},
 		/* [13] */
 		AE_Effect_Support_URL {
-			"https://www.adobe.com"
+			"https://space.bilibili.com/302469604"
 		}
 	}
 };
