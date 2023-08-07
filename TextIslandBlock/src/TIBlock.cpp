@@ -345,11 +345,49 @@ BlockFill(
 }
 
 PF_Rect CalcBlockArea(Block& block, int index) {
-	const glm::ivec2 center = glm::ivec2{ block.b_max.x + 1 + block.b_min.x , block.b_max.y + 1 + block.b_min.y } / 2;
-	const glm::ivec2 corner = glm::ivec2{ block.b_max.x + 1 - block.b_min.x , block.b_max.y + 1 - block.b_min.y } / 2;
+	glm::ivec2 center = glm::ivec2{ block.b_max.x + 1 + block.b_min.x , block.b_max.y + 1 + block.b_min.y } / 2;
+	glm::ivec2 corner = glm::ivec2{ block.b_max.x + 1 - block.b_min.x , block.b_max.y + 1 - block.b_min.y } / 2;
 
 	const double rand = random01(index);
 
+	const double begin	= (double)TIBlock::render_param.begin_xcl / 100.;
+	const double end	= (double)TIBlock::render_param.end_xcl   / 100.;
+	const int max_index = (int)TIBlock::render_param.blocks.size() - 1;
+	std::cout << index << "\n";
+	if (index < max_index * begin || index > max_index * end)
+		return { 0, 0, 0, 0 };
+
+	if(end == 0. || begin == 1.)
+		return { 0, 0, 0, 0 };
+
+	const double rand_xcl = (double)TIBlock::render_param.rand_xcl / 100.;
+	if (rand_xcl != 0) {
+		const auto seed_xcl = TIBlock::render_param.seed_xcl;
+		if(hash01(rand, rand * seed_xcl) < rand_xcl)
+			return { 0, 0, 0, 0 };
+	}
+
+	const float rand_exr = (float)TIBlock::render_param.rand_exr / 100.f;
+	glm::vec2 exr = { TIBlock::render_param.x_exr, TIBlock::render_param.y_exr };
+	if (rand_exr != 0) {
+		const auto seed_exr = TIBlock::render_param.seed_exr;
+		const glm::vec2 rand_off_exr = 2.0f * glm::vec2(hash01(rand, rand + seed_exr), hash01(rand, rand * seed_exr + seed_exr)) - 1.0f;
+
+		exr = glm::mix(exr, rand_off_exr*exr, rand_exr);
+	}
+	corner += exr;
+
+	const float rand_off = (float)TIBlock::render_param.rand_off / 100.f;
+	glm::vec2 off = { TIBlock::render_param.x_off, TIBlock::render_param.y_off };
+	if (rand_off != 0) {
+		const auto seed_off = TIBlock::render_param.seed_off;
+		const glm::vec2 rand_off_off = 2.0f * glm::vec2(hash01(rand, rand * seed_off), hash01(rand, rand * seed_off + seed_off)) - 1.0f;
+
+		off = glm::mix(off, rand_off_off * off, rand_off);
+	}
+	center += off;
+
+	corner = glm::max(corner, 0);
 	return { center.x - corner.x, center.y - corner.y , center.x + corner.x, center.y + corner.y };
 }
 
@@ -390,7 +428,7 @@ Render(
 
 	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
 	
-		const PF_Rect area = CalcBlockArea(block, i);
+		const PF_Rect area = CalcBlockArea(block, i++);
 
 		if(area.right == 0 && area.bottom == 0) continue;
 
@@ -404,8 +442,6 @@ Render(
 			nullptr,						// refcon - your custom data pointer
 			BlockFill,						// pixel function pointer
 			output));
-
-		i++;
 	}
 
 	return err;
