@@ -352,6 +352,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
   <ItemGroup>
     <ClInclude Include="..\dep\core\Parameters.h" />
     <ClInclude Include="..\dep\core\Plugin.h" />
+    <ClInclude Include="..\dep\core\xdz_math.h" />
     <ClInclude Include="src\Block.h" />
     <ClInclude Include="src\TIBlock.h" />
   </ItemGroup>

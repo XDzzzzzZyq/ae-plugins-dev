@@ -44,14 +44,35 @@
 
 #include "TIBlock.h"
 
-#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type; \
+#define BindInput(dataname, paramname, type, ae_type) dataname = (type)params[Parameters::GetParamID(paramname)]->u.ae_type; \
 Parameters::SetParamData<type>(paramname, dataname);
 
 void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 {
 	AEFX_CLR_STRUCT(TIBlock::render_param);
+
 	BindInput(color, "Block Color", PF_Pixel, cd.value);
 	BindInput(block_only, "Block Only", A_long, bd.value);
+
+	BindInput(x_exr, "x_exr", PF_FpLong, fs_d.value);
+	BindInput(y_exr, "y_exr", PF_FpLong, fs_d.value);
+	BindInput(rand_exr, "randomize_exr", double, fd.value/65536.0);
+	BindInput(seed_exr, "seed_exr", long, sd.value);
+
+	BindInput(x_off, "x_off", PF_FpLong, fs_d.value);
+	BindInput(y_off, "y_off", PF_FpLong, fs_d.value);
+	BindInput(rand_off, "randomize_off", double, fd.value / 65536.0);
+	BindInput(seed_off, "seed_off", long, sd.value);
+
+	BindInput(color2, "color2", PF_Pixel, cd.value);
+	BindInput(rand_col, "randomize_col", double, fd.value / 65536.0);
+	BindInput(seed_col, "seed_col", long, sd.value);
+
+	BindInput(begin_xcl, "begin_xcl", double, fd.value / 65536.0);
+	BindInput(end_xcl, "end_xcl", double, fd.value / 65536.0);
+	BindInput(rand_xcl, "randomize_xcl", double, fd.value / 65536.0);
+	BindInput(seed_xcl, "seed_xcl", long, sd.value);
+	
 }
 
 void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
@@ -159,10 +180,30 @@ GlobalSetup(
 	PushParam("Block Only");
 
 	PushTopic("Extrude",
-		PushParam("x");
-		PushParam("y");
-		PushParam("randomize");
+		PushParam("x_exr");
+		PushParam("y_exr");
+		PushParam("randomize_exr");
 		PushParam("seed_exr");
+	);
+
+	PushTopic("Offset",
+		PushParam("x_off");
+		PushParam("y_off");
+		PushParam("randomize_off");
+		PushParam("seed_off");
+	);
+
+	PushTopic("ReColor",
+		PushParam("color2");
+		PushParam("randomize_col");
+		PushParam("seed_col");
+	);
+
+	PushTopic("Exclude",
+		PushParam("begin_xcl");
+		PushParam("end_xcl");
+		PushParam("randomize_xcl");
+		PushParam("seed_xcl");
 	);
 
 	return PF_Err_NONE;
@@ -184,7 +225,7 @@ ParamsSetup(
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_COLOR("Color",
+	PF_ADD_COLOR("main color",
 		PF_HALF_CHAN8,
 		PF_MAX_CHAN8,
 		PF_MAX_CHAN8,
@@ -193,7 +234,7 @@ ParamsSetup(
 
 	AEFX_CLR_STRUCT(def);
 
-	PF_ADD_CHECKBOX("Block Only",
+	PF_ADD_CHECKBOX("block only",
 		"only display blocks",
 		false,
 		0,
@@ -204,12 +245,47 @@ ParamsSetup(
 
 	PF_ADD_TOPIC("Extrude", Parameters::GetParamID("Extrude"));
 
-	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x"));
-	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y"));
-	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize"));
+	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x_exr"));
+	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y_exr"));
+	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_exr"));
 	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_exr"));
 
 	PF_END_TOPIC(Parameters::GetParamID("Extrude_End"));
+
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_TOPIC("Offset", Parameters::GetParamID("Offset"));
+
+	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x_off"));
+	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y_off"));
+	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_off"));
+	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_off"));
+
+	PF_END_TOPIC(Parameters::GetParamID("Offset_End"));
+
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_TOPIC("ReColor", Parameters::GetParamID("ReColor"));
+
+	PF_ADD_COLOR("color2", PF_HALF_CHAN8, PF_MAX_CHAN8, PF_MAX_CHAN8, Parameters::GetParamID("color2"));
+	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_col"));
+	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_col"));
+
+	PF_END_TOPIC(Parameters::GetParamID("ReColor_End"));
+
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_TOPIC("Exclude", Parameters::GetParamID("Exclude"));
+
+	PF_ADD_PERCENT("begin", 0.0, Parameters::GetParamID("begin_xcl"));
+	PF_ADD_PERCENT("end", 100, Parameters::GetParamID("end_xcl"));
+	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_xcl"));
+	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_xcl"));
+
+	PF_END_TOPIC(Parameters::GetParamID("Exclude_End"));
 
 
 	out_data->num_params = Parameters::GetParamNum();
@@ -268,6 +344,15 @@ BlockFill(
 	return err;
 }
 
+PF_Rect CalcBlockArea(Block& block, int index) {
+	const glm::ivec2 center = glm::ivec2{ block.b_max.x + 1 + block.b_min.x , block.b_max.y + 1 + block.b_min.y } / 2;
+	const glm::ivec2 corner = glm::ivec2{ block.b_max.x + 1 - block.b_min.x , block.b_max.y + 1 - block.b_min.y } / 2;
+
+	const double rand = random01(index);
+
+	return { center.x - corner.x, center.y - corner.y , center.x + corner.x, center.y + corner.y };
+}
+
 static PF_Err  // int32_t
 Render(
 	PF_InData* in_data,
@@ -303,9 +388,11 @@ Render(
 
 	// fill the blocks
 
-	for (auto& block : TIBlock::render_param.blocks) {
+	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
 	
-		const PF_Rect area{ (A_long)block.b_min.x, (A_long)block.b_min.y, (A_long)block.b_max.x + 1, (A_long)block.b_max.y + 1 };
+		const PF_Rect area = CalcBlockArea(block, i);
+
+		if(area.right == 0 && area.bottom == 0) continue;
 
 		ERR(suites.Iterate8Suite2()->iterate(
 			
@@ -318,6 +405,7 @@ Render(
 			BlockFill,						// pixel function pointer
 			output));
 
+		i++;
 	}
 
 	return err;

@@ -1,15 +1,7 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "xdz_math.h"
 #include <iostream>
-
-constexpr bool operator<(const glm::vec2& _a, const glm::vec2& _b) {
-	return _a.x < _b.x || _a.y < _b.y;
-}
-
-constexpr bool operator>(const glm::vec2& _a, const glm::vec2& _b) {
-	return _a.x > _b.x || _a.y > _b.y;
-}
 
 class Block
 {

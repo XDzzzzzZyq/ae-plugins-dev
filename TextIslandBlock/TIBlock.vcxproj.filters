@@ -31,6 +31,9 @@
     <ClInclude Include="src\Block.h">
       <Filter>Headers\Main</Filter>
     </ClInclude>
+    <ClInclude Include="..\dep\core\xdz_math.h">
+      <Filter>Headers\Structure</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)dep\Util\AEGP_SuiteHandler.cpp">

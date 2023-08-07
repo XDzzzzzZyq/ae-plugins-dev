@@ -73,6 +73,8 @@ typedef short int			int16;
 #define	SKELETON_GAIN_MAX		100
 #define	SKELETON_GAIN_DFLT		10
 
+#include <vector>
+
 #include "Plugin.h"
 #include "Block.h"
 
@@ -86,7 +88,22 @@ public:
 		// paramaters
 		PF_Pixel color;
 		A_long block_only;
+		
+		PF_FpLong x_exr, y_exr;
+		double rand_exr;
+		long seed_exr;
 
+		PF_FpLong x_off, y_off;
+		double rand_off;
+		long seed_off;
+
+		PF_Pixel color2;
+		double rand_col;
+		long seed_col;
+
+		double begin_xcl, end_xcl;
+		double rand_xcl;
+		long seed_xcl;
 
 		// text info
 		std::vector<Block> blocks;
