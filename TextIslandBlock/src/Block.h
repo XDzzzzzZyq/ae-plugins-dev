@@ -35,6 +35,8 @@ public:
 	void UpdateMin(const glm::vec2& _min);
 	void UpdateMax(const glm::vec2& _max);
 
+	void Reset();
+
 };
 
 

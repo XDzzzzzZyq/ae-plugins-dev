@@ -16,3 +16,9 @@ void Block::UpdateMax(const glm::vec2& _max)
 	if (_max.x > b_max.x) b_max.x = _max.x;
 	if (_max.y > b_max.y) b_max.y = _max.y;
 }
+
+void Block::Reset()
+{
+	b_min = glm::vec2{ 9999. };
+	b_max = glm::vec2{ 0. };
+}

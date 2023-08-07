@@ -44,12 +44,24 @@
 
 #include "TIBlock.h"
 
+
+TIBlock::ParamData TIBlock::render_param;
+
+AEGP_LayerH TIBlock::layerPH = nullptr;
+
+AEGP_TextOutlinesH TIBlock::outlinesPH = nullptr;
+
+void TIBlock::Reset()
+{
+	AEFX_CLR_STRUCT(TIBlock::render_param);
+	//TIBlock::render_param.blocks.clear();
+}
+
 #define BindInput(dataname, paramname, type, ae_type) dataname = (type)params[Parameters::GetParamID(paramname)]->u.ae_type; \
 Parameters::SetParamData<type>(paramname, dataname);
 
 void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 {
-	AEFX_CLR_STRUCT(TIBlock::render_param);
 
 	BindInput(color, "Block Color", PF_Pixel, cd.value);
 	BindInput(block_only, "Block Only", A_long, bd.value);
@@ -84,9 +96,10 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 		in_data->effect_ref,
 		&TIBlock::layerPH);
 
+	A_Time time = { in_data->current_time , in_data->time_scale };
 	suites.TextLayerSuite1()->AEGP_GetNewTextOutlines(
 		TIBlock::layerPH,
-		(const A_Time*)&in_data->time_step,
+		&time,
 		&TIBlock::outlinesPH);
 
 	A_long count{};
@@ -98,6 +111,9 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 	TIBlock::render_param.blocks.resize(count);
 
 	for (A_long i = 0; i < count; i++) {
+
+		TIBlock::render_param.blocks.at(i).Reset();
+
 		PF_PathOutlinePtr pathPP{};
 		suites.TextLayerSuite1()->AEGP_GetIndexedTextOutline(
 			TIBlock::outlinesPH,
@@ -112,6 +128,7 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 
 		std::vector<glm::vec2> verts(nums);
 		for (A_long j = 0; j < nums; j++) {
+
 			PF_PathVertex vert{};
 			suites.PathDataSuite1()->PF_PathVertexInfo(
 				in_data->effect_ref,
@@ -134,12 +151,6 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 	}
 	//std::cout << "end\n";
 }
-
-TIBlock::ParamData TIBlock::render_param;
-
-AEGP_LayerH TIBlock::layerPH = nullptr;
-
-AEGP_TextOutlinesH TIBlock::outlinesPH = nullptr;
 
 static PF_Err
 About(
@@ -261,6 +272,8 @@ ParamsSetup(
 
 	PF_ADD_TOPIC("Extrude", Parameters::GetParamID("Extrude"));
 
+	AEFX_CLR_STRUCT(def);
+
 	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x_exr"));
 	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y_exr"));
 	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_exr"));
@@ -272,6 +285,8 @@ ParamsSetup(
 	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_TOPIC("Offset", Parameters::GetParamID("Offset"));
+
+	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_FLOAT_SLIDERX("x", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("x_off"));
 	PF_ADD_FLOAT_SLIDERX("y", -1000, 1000, -100, 100, 0, PF_Precision_TENTHS, 0, 0, Parameters::GetParamID("y_off"));
@@ -285,6 +300,8 @@ ParamsSetup(
 
 	PF_ADD_TOPIC("Random Colorize (future)", Parameters::GetParamID("ReColor"));
 
+	AEFX_CLR_STRUCT(def);
+
 	PF_ADD_COLOR("color2", PF_HALF_CHAN8, PF_MAX_CHAN8, PF_MAX_CHAN8, Parameters::GetParamID("color2"));
 	PF_ADD_PERCENT("randomize", 0.0, Parameters::GetParamID("randomize_col"));
 	PF_ADD_SLIDER("seed", -1000, 1000, -1000, 1000, 0, Parameters::GetParamID("seed_col"));
@@ -295,6 +312,8 @@ ParamsSetup(
 	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_TOPIC("Exclude", Parameters::GetParamID("Exclude"));
+
+	AEFX_CLR_STRUCT(def);
 
 	PF_ADD_PERCENT("begin", 0.0, Parameters::GetParamID("begin_xcl"));
 	PF_ADD_PERCENT("end", 100, Parameters::GetParamID("end_xcl"));
@@ -567,6 +586,7 @@ EffectMain(
 
 		case PF_Cmd_RENDER:
 
+			TIBlock::Reset();
 			TIBlock::render_param.UpdateParam(in_data, params);
 			TIBlock::render_param.UpdateBlock(in_data, params);
 

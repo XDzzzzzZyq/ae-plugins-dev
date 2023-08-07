@@ -123,6 +123,7 @@ public:
 public:
 
 	TIBlock(std::string name, std::string descr) : Plugin(name, descr) {};
+	static void Reset();
 
 public:
 
