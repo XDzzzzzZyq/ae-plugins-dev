@@ -88,6 +88,7 @@ public:
 		// paramaters
 		PF_Pixel color;
 		A_long block_only;
+		A_long cpy_pre;
 		A_long hole_exclude;
 		
 		PF_FpLong x_exr, y_exr;

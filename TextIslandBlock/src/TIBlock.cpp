@@ -58,6 +58,7 @@ void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
 
 	BindInput(color, "Block Color", PF_Pixel, cd.value);
 	BindInput(block_only, "Block Only", A_long, bd.value);
+	BindInput(cpy_pre, "Cpy Pre", A_long, bd.value);
 	BindInput(hole_exclude, "Exclude Inv", A_long, bd.value);
 
 	BindInput(x_exr, "x_exr", PF_FpLong, fs_d.value);
@@ -191,6 +192,7 @@ GlobalSetup(
 	PushParam("None");
 	PushParam("Block Color");
 	PushParam("Block Only");
+	PushParam("Cpy Pre");
 	PushParam("Exclude Inv");
 
 	PushTopic("Extrude",
@@ -253,6 +255,14 @@ ParamsSetup(
 		false,
 		0,
 		Parameters::GetParamID("Exclude Inv"));
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_CHECKBOX("copy base",
+		"copy previous layer",
+		false,
+		0,
+		Parameters::GetParamID("Cpy Pre"));
 
 
 	AEFX_CLR_STRUCT(def);
@@ -325,6 +335,21 @@ ParamsSetup(
 }
 
 static PF_Err
+Clear(
+	void* refcon,
+	A_long		xL,
+	A_long		yL,
+	PF_Pixel8* inP,
+	PF_Pixel8* outP)
+{
+	PF_Err		err = PF_Err_NONE;
+
+	outP->red = outP->green = outP->blue = outP->alpha = 0;
+
+	return err;
+}
+
+static PF_Err
 Copy8(
 	void* refcon,
 	A_long		xL,
@@ -334,7 +359,30 @@ Copy8(
 {
 	PF_Err		err = PF_Err_NONE;
 
+	const bool has_block = outP->alpha > 1;
+
+	outP->red = has_block ? outP->red : inP->red;
+	outP->green = has_block ? outP->green : inP->green;
+	outP->blue = has_block ? outP->blue : inP->blue;
+	outP->alpha = glm::max(outP->alpha, inP->alpha);
+
+	return err;
+}
+
+static PF_Err
+CopyText8(
+	void* refcon,
+	A_long		xL,
+	A_long		yL,
+	PF_Pixel8* inP,
+	PF_Pixel8* outP)
+{
+	PF_Err		err = PF_Err_NONE;
+
 	const double frac = (double)inP->alpha / (double)255;
+
+	if (outP->alpha == 0 && outP->red == 0 && outP->blue == 0 && outP->green == 0)
+		return err;
 
 	outP->alpha =	(A_u_char)(255*(1-(255-inP->alpha)/255.0 * (255 - outP->alpha) / 255.0));
 	outP->red =		(A_u_char)(outP->red * (1.0 - frac) + inP->red * frac);
@@ -378,7 +426,7 @@ Exclude8(
 	return err;
 }
 
-PF_Rect CalcBlockArea(TIBlock* plugin, Block& block, int index) {
+PF_Rect CalcBlockArea(TIBlock* plugin, Block& block, int index, glm::vec2 ratio) {
 	glm::ivec2 center = glm::ivec2{ block.b_max.x + 1 + block.b_min.x , block.b_max.y + 1 + block.b_min.y } / 2;
 	glm::ivec2 corner = glm::ivec2{ block.b_max.x + 1 - block.b_min.x , block.b_max.y + 1 - block.b_min.y } / 2;
 
@@ -422,6 +470,9 @@ PF_Rect CalcBlockArea(TIBlock* plugin, Block& block, int index) {
 	center += off;
 
 	corner = glm::max(corner, 0);
+
+	center /= ratio;
+	corner /= ratio;
 	return { center.x - corner.x, center.y - corner.y , center.x + corner.x, center.y + corner.y };
 }
 
@@ -441,8 +492,10 @@ Render(
 	A_long				linesL = 0;
 
 	linesL = output->extent_hint.bottom - output->extent_hint.top;
+	std::cout << linesL << "\n";
 
 	PF_ParamDef sourceWorld{};
+	glm::vec2	ratio{ in_data->downsample_x.den, in_data->downsample_y.den };
 
 	ERR(PF_CHECKOUT_PARAM(
 		in_data,
@@ -453,6 +506,17 @@ Render(
 		&sourceWorld
 	));
 
+	ERR(suites.Iterate8Suite2()->iterate(
+
+		in_data,
+		0,								// progress base
+		linesL,							// progress final
+		output,							// src 
+		NULL,							// area - null for all pixels
+		nullptr,						// refcon - your custom data pointer
+		Clear,							// pixel function pointer
+		output));
+
 	// fill the blocks
 
 	for (int i = 0; auto & block : plugin->render_param.blocks) {
@@ -462,7 +526,7 @@ Render(
 			continue;
 		}
 
-		const PF_Rect area = CalcBlockArea(plugin, block, i++);
+		const PF_Rect area = CalcBlockArea(plugin, block, i++, ratio);
 
 		if(area.right == 0 && area.bottom == 0) continue;
 
@@ -487,7 +551,7 @@ Render(
 			continue;
 		}
 
-		const PF_Rect area = CalcBlockArea(plugin, block, i++);
+		const PF_Rect area = CalcBlockArea(plugin, block, i++, ratio);
 
 		if (area.right == 0 && area.bottom == 0) continue;
 
@@ -503,6 +567,20 @@ Render(
 			output));
 	}
 
+	if (plugin->render_param.cpy_pre != 0) {
+
+	ERR(suites.Iterate8Suite2()->iterate(
+
+		in_data,
+		0,								// progress base
+		linesL,							// progress final
+		&params[0]->u.ld,				// src 
+		NULL,							// area - null for all pixels
+		nullptr,						// refcon - your custom data pointer
+		Copy8,							// pixel function pointer
+		output));
+	}
+
 	// copy_text
 
 	if (plugin->render_param.block_only == 0) {
@@ -515,7 +593,7 @@ Render(
 			&sourceWorld.u.ld,				// src 
 			NULL,							// area - null for all pixels
 			nullptr,						// refcon - your custom data pointer
-			Copy8,							// pixel function pointer
+			CopyText8,							// pixel function pointer
 			output));
 
 	}
@@ -563,7 +641,7 @@ EffectMain(
 	void* extra)
 {
 	PF_Err		err = PF_Err_NONE;
-	TIBlock plugin{};
+	TIBlock		plugin{};
 
 	try {
 		switch (cmd) {
@@ -601,7 +679,7 @@ EffectMain(
 
 		case PF_Cmd_RENDER:
 
-			plugin.Reset();
+			//plugin.Reset();
 			plugin.render_param.UpdateParam(in_data, params);
 			plugin.render_param.UpdateBlock(in_data, params);
 
@@ -620,7 +698,7 @@ EffectMain(
 		err = thrown_err;
 	}
 
-	plugin.Reset();
+	//plugin.Reset();
 	return err;
 }
 
