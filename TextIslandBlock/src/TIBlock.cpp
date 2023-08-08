@@ -44,20 +44,13 @@
 
 #include "TIBlock.h"
 
-
-TIBlock::ParamData TIBlock::render_param;
-
-AEGP_LayerH TIBlock::layerPH = nullptr;
-
-AEGP_TextOutlinesH TIBlock::outlinesPH = nullptr;
-
 void TIBlock::Reset()
 {
 	AEFX_CLR_STRUCT(TIBlock::render_param);
 	//TIBlock::render_param.blocks.clear();
 }
 
-#define BindInput(dataname, paramname, type, ae_type) dataname = (type)params[Parameters::GetParamID(paramname)]->u.ae_type; \
+#define BindInput(dataname, paramname, type, ae_type) this->dataname = (type)params[Parameters::GetParamID(paramname)]->u.ae_type; \
 Parameters::SetParamData<type>(paramname, dataname);
 
 void TIBlock::ParamData::UpdateParam(PF_InData* in_data, PF_ParamDef** params)
@@ -92,31 +85,34 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 {
 	AEGP_SuiteHandler suites(in_data->pica_basicP);
 
+	AEGP_LayerH layerPH{};
+	AEGP_TextOutlinesH outlinesPH{};
+
 	suites.PFInterfaceSuite1()->AEGP_GetEffectLayer(
 		in_data->effect_ref,
-		&TIBlock::layerPH);
+		&layerPH);
 
 	A_Time time = { in_data->current_time , in_data->time_scale };
 	suites.TextLayerSuite1()->AEGP_GetNewTextOutlines(
-		TIBlock::layerPH,
+		layerPH,
 		&time,
-		&TIBlock::outlinesPH);
+		&outlinesPH);
 
 	A_long count{};
 	suites.TextLayerSuite1()->AEGP_GetNumTextOutlines(
-		TIBlock::outlinesPH,
+		outlinesPH,
 		&count
 	);
 
-	TIBlock::render_param.blocks.resize(count);
+	this->blocks.resize(count);
 
 	for (A_long i = 0; i < count; i++) {
 
-		TIBlock::render_param.blocks.at(i).Reset();
+		this->blocks.at(i).Reset();
 
 		PF_PathOutlinePtr pathPP{};
 		suites.TextLayerSuite1()->AEGP_GetIndexedTextOutline(
-			TIBlock::outlinesPH,
+			outlinesPH,
 			i,
 			&pathPP);
 
@@ -138,15 +134,15 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 
 			const glm::vec2 b_vert{ vert.x, vert.y };
 
-			TIBlock::render_param.blocks.at(i).UpdateMin(b_vert);
-			TIBlock::render_param.blocks.at(i).UpdateMax(b_vert);
+			this->blocks.at(i).UpdateMin(b_vert);
+			this->blocks.at(i).UpdateMax(b_vert);
 
 			verts.at(j) = b_vert;
 			//std::cout << vert.x << ", " << vert.y << "\n";
 		}
 		
-		if(TIBlock::render_param.hole_exclude)
-			TIBlock::render_param.blocks.at(i).b_invert = is_invert(verts);
+		if(this->hole_exclude)
+			this->blocks.at(i).b_invert = is_invert(verts);
 		//std::cout << TIBlock::render_param.blocks.at(i) << "\n";
 	}
 	//std::cout << "end\n";
@@ -223,7 +219,7 @@ GlobalSetup(
 		PushParam("randomize_xcl");
 		PushParam("seed_xcl");
 	);
-
+	std::cout << "init\n";
 	return PF_Err_NONE;
 }
 
@@ -238,7 +234,7 @@ ParamsSetup(
 	PF_ParamDef	def;
 
 
-
+	std::cout << "param_setup\n";
 
 
 	AEFX_CLR_STRUCT(def);
@@ -357,11 +353,12 @@ BlockFill(
 	PF_Pixel8* outP)
 {
 	PF_Err		err = PF_Err_NONE;
+	TIBlock*	plugin = (TIBlock*)refcon;
 
 	outP->alpha = 255;
-	outP->red = TIBlock::render_param.color.red;
-	outP->green = TIBlock::render_param.color.green;
-	outP->blue = TIBlock::render_param.color.blue;
+	outP->red = plugin->render_param.color.red;
+	outP->green = plugin->render_param.color.green;
+	outP->blue = plugin->render_param.color.blue;
 
 	return err;
 }
@@ -381,15 +378,15 @@ Exclude8(
 	return err;
 }
 
-PF_Rect CalcBlockArea(Block& block, int index) {
+PF_Rect CalcBlockArea(TIBlock* plugin, Block& block, int index) {
 	glm::ivec2 center = glm::ivec2{ block.b_max.x + 1 + block.b_min.x , block.b_max.y + 1 + block.b_min.y } / 2;
 	glm::ivec2 corner = glm::ivec2{ block.b_max.x + 1 - block.b_min.x , block.b_max.y + 1 - block.b_min.y } / 2;
 
 	const double rand = random01(index);
 
-	const double begin	= (double)TIBlock::render_param.begin_xcl / 100.;
-	const double end	= (double)TIBlock::render_param.end_xcl   / 100.;
-	const int max_index = (int)TIBlock::render_param.blocks.size() - 1;
+	const double begin	= (double)plugin->render_param.begin_xcl / 100.;
+	const double end	= (double)plugin->render_param.end_xcl   / 100.;
+	const int max_index = (int)plugin->render_param.blocks.size() - 1;
 	//std::cout << index << "\n";
 	if (index < max_index * begin || index > max_index * end)
 		return { 0, 0, 0, 0 };
@@ -397,27 +394,27 @@ PF_Rect CalcBlockArea(Block& block, int index) {
 	if(end == 0. || begin == 1.)
 		return { 0, 0, 0, 0 };
 
-	const double rand_xcl = (double)TIBlock::render_param.rand_xcl / 100.;
+	const double rand_xcl = (double)plugin->render_param.rand_xcl / 100.;
 	if (rand_xcl != 0) {
-		const auto seed_xcl = TIBlock::render_param.seed_xcl + 1.3;
+		const auto seed_xcl = plugin->render_param.seed_xcl + 1.3;
 		if(hash01(rand, rand * seed_xcl) < rand_xcl)
 			return { 0, 0, 0, 0 };
 	}
 
-	const float rand_exr = (float)TIBlock::render_param.rand_exr / 100.f;
-	glm::vec2 exr = { TIBlock::render_param.x_exr, TIBlock::render_param.y_exr };
+	const float rand_exr = (float)plugin->render_param.rand_exr / 100.f;
+	glm::vec2 exr = { plugin->render_param.x_exr, plugin->render_param.y_exr };
 	if (rand_exr != 0) {
-		const auto seed_exr = TIBlock::render_param.seed_exr + 1.3;
+		const auto seed_exr = plugin->render_param.seed_exr + 1.3;
 		const glm::vec2 rand_off_exr = 2.0f * glm::vec2(hash01(rand, rand + seed_exr), hash01(rand, rand * seed_exr + seed_exr)) - 1.0f;
 
 		exr = glm::mix(exr, rand_off_exr*exr, rand_exr);
 	}
 	corner += exr;
 
-	const float rand_off = (float)TIBlock::render_param.rand_off / 100.f;
-	glm::vec2 off = { TIBlock::render_param.x_off, TIBlock::render_param.y_off };
+	const float rand_off = (float)plugin->render_param.rand_off / 100.f;
+	glm::vec2 off = { plugin->render_param.x_off, plugin->render_param.y_off };
 	if (rand_off != 0) {
-		const auto seed_off = TIBlock::render_param.seed_off + 1.3;
+		const auto seed_off = plugin->render_param.seed_off + 1.3;
 		const glm::vec2 rand_off_off = 2.0f * glm::vec2(hash01(rand, rand * seed_off), hash01(rand, rand * seed_off + seed_off)) - 1.0f;
 
 		off = glm::mix(off, rand_off_off * off, rand_off);
@@ -433,6 +430,7 @@ Render(
 	PF_InData* in_data,
 	PF_OutData* out_data,
 	PF_ParamDef* params[],
+	TIBlock*	plugin,
 	PF_LayerDef* output)
 {
 	PF_Err				err = PF_Err_NONE;
@@ -444,16 +442,27 @@ Render(
 
 	linesL = output->extent_hint.bottom - output->extent_hint.top;
 
+	PF_ParamDef sourceWorld{};
+
+	ERR(PF_CHECKOUT_PARAM(
+		in_data,
+		0,
+		in_data->current_time,
+		in_data->time_step,
+		in_data->time_scale,
+		&sourceWorld
+	));
+
 	// fill the blocks
 
-	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
+	for (int i = 0; auto & block : plugin->render_param.blocks) {
 	
-		if (block.b_invert && TIBlock::render_param.hole_exclude) {
+		if (block.b_invert && plugin->render_param.hole_exclude) {
 			i++;
 			continue;
 		}
 
-		const PF_Rect area = CalcBlockArea(block, i++);
+		const PF_Rect area = CalcBlockArea(plugin, block, i++);
 
 		if(area.right == 0 && area.bottom == 0) continue;
 
@@ -464,21 +473,21 @@ Render(
 			linesL,							// progress final
 			output,							// src 
 			&area,							// area - null for all pixels
-			nullptr,						// refcon - your custom data pointer
+			plugin,							// refcon - your custom data pointer
 			BlockFill,						// pixel function pointer
 			output));
 	}
 
 	// exclude the blocks
 
-	for (int i = 0; auto & block : TIBlock::render_param.blocks) {
+	for (int i = 0; auto & block : plugin->render_param.blocks) {
 
-		if (!block.b_invert || !TIBlock::render_param.hole_exclude) {
+		if (!block.b_invert || !plugin->render_param.hole_exclude) {
 			i++;
 			continue;
 		}
 
-		const PF_Rect area = CalcBlockArea(block, i++);
+		const PF_Rect area = CalcBlockArea(plugin, block, i++);
 
 		if (area.right == 0 && area.bottom == 0) continue;
 
@@ -494,22 +503,27 @@ Render(
 			output));
 	}
 
-	// copy
+	// copy_text
 
-	if (TIBlock::render_param.block_only == 0) {
+	if (plugin->render_param.block_only == 0) {
 
 		ERR(suites.Iterate8Suite2()->iterate(
 
 			in_data,
 			0,								// progress base
 			linesL,							// progress final
-			&params[0]->u.ld,				// src 
+			&sourceWorld.u.ld,				// src 
 			NULL,							// area - null for all pixels
 			nullptr,						// refcon - your custom data pointer
 			Copy8,							// pixel function pointer
 			output));
 
 	}
+
+	ERR(PF_CHECKIN_PARAM(in_data, &sourceWorld));
+	AEFX_CLR_STRUCT(sourceWorld);
+
+	// copy previous layer
 
 	return err;
 }
@@ -549,6 +563,7 @@ EffectMain(
 	void* extra)
 {
 	PF_Err		err = PF_Err_NONE;
+	TIBlock plugin{};
 
 	try {
 		switch (cmd) {
@@ -586,13 +601,14 @@ EffectMain(
 
 		case PF_Cmd_RENDER:
 
-			TIBlock::Reset();
-			TIBlock::render_param.UpdateParam(in_data, params);
-			TIBlock::render_param.UpdateBlock(in_data, params);
+			plugin.Reset();
+			plugin.render_param.UpdateParam(in_data, params);
+			plugin.render_param.UpdateBlock(in_data, params);
 
 			err = Render(in_data,
 				out_data,
 				params,
+				&plugin,
 				output);
 			break;
 
@@ -603,6 +619,8 @@ EffectMain(
 	catch (PF_Err& thrown_err) {
 		err = thrown_err;
 	}
+
+	plugin.Reset();
 	return err;
 }
 

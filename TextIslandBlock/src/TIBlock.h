@@ -116,19 +116,13 @@ public:
 
 	} ParamData, * ParamDataP, ** ParamDataH;
 
-	static ParamData render_param;
-	static AEGP_LayerH layerPH;
-	static AEGP_TextOutlinesH outlinesPH;
+	ParamData render_param{};
 
 public:
 
 	TIBlock(std::string name, std::string descr) : Plugin(name, descr) {};
-	static void Reset();
-
-public:
-
-	void CheckIn(PF_InData* in_data, PF_ParamDef** params);
-	void CheckOut(PF_InData* in_data, PF_ParamDef** params);
+	TIBlock() {};
+	void Reset();
 
 };
 
