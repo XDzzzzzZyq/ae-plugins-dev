@@ -99,6 +99,9 @@ void TIBlock::ParamData::UpdateBlock(PF_InData* in_data, PF_ParamDef** params)
 		&time,
 		&outlinesPH);
 
+	if (outlinesPH == nullptr)
+		return;
+
 	A_long count{};
 	suites.TextLayerSuite1()->AEGP_GetNumTextOutlines(
 		outlinesPH,
@@ -381,9 +384,6 @@ CopyText8(
 
 	const double frac = (double)inP->alpha / (double)255;
 
-	if (outP->alpha == 0 && outP->red == 0 && outP->blue == 0 && outP->green == 0)
-		return err;
-
 	outP->alpha =	(A_u_char)(255*(1-(255-inP->alpha)/255.0 * (255 - outP->alpha) / 255.0));
 	outP->red =		(A_u_char)(outP->red * (1.0 - frac) + inP->red * frac);
 	outP->green =	(A_u_char)(outP->green * (1.0 - frac) + inP->green * frac);
@@ -497,15 +497,6 @@ Render(
 	PF_ParamDef sourceWorld{};
 	glm::vec2	ratio{ in_data->downsample_x.den, in_data->downsample_y.den };
 
-	ERR(PF_CHECKOUT_PARAM(
-		in_data,
-		0,
-		in_data->current_time,
-		in_data->time_step,
-		in_data->time_scale,
-		&sourceWorld
-	));
-
 	ERR(suites.Iterate8Suite2()->iterate(
 
 		in_data,
@@ -582,6 +573,15 @@ Render(
 	}
 
 	// copy_text
+
+	ERR(PF_CHECKOUT_PARAM(
+		in_data,
+		0,
+		in_data->current_time,
+		in_data->time_step,
+		in_data->time_scale,
+		&sourceWorld
+	));
 
 	if (plugin->render_param.block_only == 0) {
 
