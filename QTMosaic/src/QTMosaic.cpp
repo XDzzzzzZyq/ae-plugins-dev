@@ -44,16 +44,15 @@
 
 #include "QTMosaic.h"
 
-#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type.value; \
+#define BindInput(dataname, paramname, type, ae_type) dataname = params[Parameters::GetParamID(paramname)]->u.ae_type; \
 Parameters::SetParamData<type>(paramname, dataname);
 
 void QTMosaic::ParamData::Update(PF_ParamDef** params)
 {
-	AEFX_CLR_STRUCT(QTMosaic::render_param);
-	BindInput(gainF, "Gain", PF_FpLong, fs_d);
+	BindInput(gainF, "Gain", PF_FpLong, fs_d.value);
+	BindInput(color, "Color", PF_Pixel, cd.value);
+	BindInput(layer, "Layer", PF_LayerDef, ld);
 }
-
-QTMosaic::ParamData QTMosaic::render_param;
 
 static PF_Err 
 About (	
@@ -100,6 +99,7 @@ GlobalSetup (
 	PushParam("Color");
 	PushParam("Count");
 	PushParam("Select");
+	PushParam("Layer");
 	
 	return PF_Err_NONE;
 }
@@ -155,6 +155,10 @@ ParamsSetup (
 						false,
 						PF_ParamFlag_SUPERVISE,
 						Parameters::GetParamID("Select"));
+
+	AEFX_CLR_STRUCT(def);
+
+	PF_ADD_LAYER("Layer", 1, Parameters::GetParamID("Layer"));
 	
 	out_data->num_params = Parameters::GetParamNum();
 
@@ -173,20 +177,18 @@ MySimpleGainFunc16 (
 
 	if (refcon == nullptr) return err;
 
-	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
-	PF_FpLong	tempF	= 0;
-			
-	tempF = QTMosaic::render_param.gainF * PF_MAX_CHAN16 / 100.0;
-	if (tempF > PF_MAX_CHAN16){
-		tempF = PF_MAX_CHAN16;
-	};
-
 	outP->alpha		=	inP->alpha;
-	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN16);
-	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN16);
-	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN16);
+	outP->red		=	inP->red	;
+	outP->green		=	inP->green	;
+	outP->blue		=	inP->blue	;
 
 	return err;
+}
+
+PF_Pixel* sampleIntegral32(PF_EffectWorld& def, int x, int y) {
+	return (PF_Pixel*)((char*)def.data +
+		(y * def.rowbytes) +
+		(x * sizeof(PF_Pixel)));
 }
 
 static PF_Err
@@ -201,18 +203,23 @@ MySimpleGainFunc8 (
 
 	if (refcon == nullptr) return err;
 
-	//QTMosaic::ParamData	*giP	= reinterpret_cast<QTMosaic::ParamData*>(refcon);
-	PF_FpLong	tempF	= 0;
-	
-	tempF = QTMosaic::render_param.gainF * PF_MAX_CHAN8 / 100.0;
-	if (tempF > PF_MAX_CHAN8){
-		tempF = PF_MAX_CHAN8;
-	};
+	QTMosaic::ParamData* param = (QTMosaic::ParamData*)refcon;
+
+	PF_Pixel* tar = sampleIntegral32(param->layer, xL, yL);
+
 
 	outP->alpha		=	inP->alpha;
-	outP->red		=	MIN((inP->red	+ (A_u_char) tempF), PF_MAX_CHAN8);
-	outP->green		=	MIN((inP->green	+ (A_u_char) tempF), PF_MAX_CHAN8);
-	outP->blue		=	MIN((inP->blue	+ (A_u_char) tempF), PF_MAX_CHAN8);
+	outP->red = param->color.red;
+	outP->green		=	inP->green;
+	outP->blue		=	inP->blue;
+
+	if (param->layer.data == nullptr) {
+		outP->red = inP->red;
+		//outP->red		=	param->color.red;
+	}
+	else {
+		outP->red = tar->red;
+	}
 
 	return err;
 }
@@ -222,7 +229,8 @@ Render (
 	PF_InData		*in_data,
 	PF_OutData		*out_data,
 	PF_ParamDef		*params[],
-	PF_LayerDef		*output )
+	PF_LayerDef		*output,
+	QTMosaic*		plugin)
 {
 	PF_Err				err		= PF_Err_NONE;
 	AEGP_SuiteHandler	suites(in_data->pica_basicP);
@@ -230,8 +238,22 @@ Render (
 	/*	Put interesting code here. */
 
 	A_long				linesL	= 0;
+	PF_ParamDef			sourceWorld{};
 
 	linesL = output->extent_hint.bottom - output->extent_hint.top;
+
+	PF_CHECKOUT_PARAM(
+		in_data,
+		Parameters::GetParamID("Layer"), 
+		in_data->current_time,
+		in_data->time_step,
+		in_data->time_scale, 
+		&sourceWorld
+	);
+
+	plugin->render_param.layer = sourceWorld.u.ld;
+
+	std::cout << &sourceWorld.u.ld << std::endl;
 
 	if (PF_WORLD_IS_DEEP(output)){
 		ERR(suites.Iterate16Suite2()->iterate(	in_data,
@@ -239,7 +261,7 @@ Render (
 												linesL,							// progress final
 												&params[0]->u.ld,				// src 
 												NULL,							// area - null for all pixels
-												(void*)&QTMosaic::render_param,	// refcon - your custom data pointer
+												(void*)plugin,	// refcon - your custom data pointer
 												MySimpleGainFunc16,				// pixel function pointer
 												output));
 	} else {
@@ -248,10 +270,13 @@ Render (
 												linesL,							// progress final
 												&params[0]->u.ld,				// src 
 												NULL,							// area - null for all pixels
-												(void*)&QTMosaic::render_param,	// refcon - your custom data pointer
+												(void*)plugin,	// refcon - your custom data pointer
 												MySimpleGainFunc8,				// pixel function pointer
 												output));	
 	}
+
+	ERR(PF_CHECKIN_PARAM(in_data, &sourceWorld));
+	AEFX_CLR_STRUCT(sourceWorld);
 
 	return err;
 }
@@ -291,6 +316,8 @@ EffectMain(
 	void			*extra)
 {
 	PF_Err		err = PF_Err_NONE;
+
+	QTMosaic plugin{};
 	
 	try {
 		switch (cmd) {
@@ -328,11 +355,14 @@ EffectMain(
 				
 			case PF_Cmd_RENDER:
 
-				QTMosaic::render_param.Update(params);
+				AEFX_CLR_STRUCT(plugin.render_param);
+				plugin.render_param.Update(params);
+
 				err = Render(	in_data,
 								out_data,
 								params,
-								output);
+								output,
+								&plugin);
 				break;
 
 			case PF_Cmd_USER_CHANGED_PARAM:

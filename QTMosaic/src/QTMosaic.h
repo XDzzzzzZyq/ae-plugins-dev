@@ -25,9 +25,6 @@
 
 #pragma once
 
-#ifndef SKELETON_H
-#define SKELETON_H
-
 typedef unsigned char		u_char;
 typedef unsigned short		u_short;
 typedef unsigned short		u_int16;
@@ -81,17 +78,19 @@ public:
 	typedef class ParamData {
 	public:
 		PF_FpLong	gainF;
+		PF_Pixel color;
+		PF_LayerDef layer;
 	public:
 		void Update(PF_ParamDef** params);
 
 	} ParamData, * ParamDataP, ** ParamDataH;
 
-	static ParamData render_param;
+	ParamData render_param{};
 
 public:
 
 	QTMosaic(std::string name, std::string descr) : Plugin(name, descr) {};
-
+	QTMosaic() {};
 };
 
 
@@ -108,5 +107,3 @@ extern "C" {
 		void			*extra);
 
 }
-
-#endif // SKELETON_H

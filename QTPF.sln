@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TIBlock", "TextIslandBlock\TIBlock.vcxproj", "{DF2AA1AD-E609-4CBA-8964-15CE2FEEF08A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TIBlock2020", "TextIslandBlock2020\TIBlock2020.vcxproj", "{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -36,6 +38,14 @@ Global
 		{DF2AA1AD-E609-4CBA-8964-15CE2FEEF08A}.Release|x64.Build.0 = Release|x64
 		{DF2AA1AD-E609-4CBA-8964-15CE2FEEF08A}.Release|x86.ActiveCfg = Release|Win32
 		{DF2AA1AD-E609-4CBA-8964-15CE2FEEF08A}.Release|x86.Build.0 = Release|Win32
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Debug|x64.ActiveCfg = Debug|x64
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Debug|x64.Build.0 = Debug|x64
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Debug|x86.ActiveCfg = Debug|Win32
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Debug|x86.Build.0 = Debug|Win32
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Release|x64.ActiveCfg = Release|x64
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Release|x64.Build.0 = Release|x64
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Release|x86.ActiveCfg = Release|Win32
+		{88E13C4D-69AC-4C93-AB9B-6BDB9ADF2355}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
