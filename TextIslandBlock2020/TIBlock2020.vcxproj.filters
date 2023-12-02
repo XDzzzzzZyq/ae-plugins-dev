@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{b69af876-1d29-49fa-9917-fd2efa165225}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{e1cf207c-552f-4fd4-96ed-76ccc9ebdf72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Supporting code">
+      <UniqueIdentifier>{f2f05dcb-eed5-4aa5-b2d0-504449ce3cf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Main">
+      <UniqueIdentifier>{831f0357-6954-4483-aea1-c2e543872df3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Structure">
+      <UniqueIdentifier>{529e945a-6b82-4518-bf99-1c3a84368db5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\dep\core\Parameters.h">
+      <Filter>Headers\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dep\core\Plugin.h">
+      <Filter>Headers\Structure</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TIBlock.h">
+      <Filter>Headers\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Block.h">
+      <Filter>Headers\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dep\core\xdz_math.h">
+      <Filter>Headers\Structure</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dep\core\Parameters.cpp">
+      <Filter>Headers\Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dep\core\Plugin.cpp">
+      <Filter>Headers\Structure</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TIBlock.cpp">
+      <Filter>Headers\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Block.cpp">
+      <Filter>Headers\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)dep\2020\Util\AEGP_SuiteHandler.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)dep\2020\Util\MissingSuiteError.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dep\2020\Util\Smart_Utils.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PiPL.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\PiPL.r">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
+</Project>

@@ -46,7 +46,7 @@
 
 void TIBlock::Reset()
 {
-	AEFX_CLR_STRUCT(render_param);
+	AEFX_CLR_STRUCT(TIBlock::render_param);
 	//TIBlock::render_param.blocks.clear();
 }
 
@@ -162,7 +162,7 @@ About(
 	AEGP_SuiteHandler suites(in_data->pica_basicP);
 
 	static TIBlock plugin(
-		"Text Island Block",
+		"Text Island Block 2020",
 		"Quick blocks generator for text islands. \rCopyright XDzZyq"
 	);
 
@@ -190,7 +190,7 @@ GlobalSetup(
 		BUILD_VERSION);
 
 	out_data->out_flags = PF_OutFlag_DEEP_COLOR_AWARE | PF_OutFlag_I_DO_DIALOG;	// just 16bpc, not 32bpc
-	out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
+	//out_data->out_flags2 = PF_OutFlag2_SUPPORTS_THREADED_RENDERING;
 
 	PushParam("None");
 	PushParam("Block Color");
@@ -240,7 +240,6 @@ ParamsSetup(
 
 
 	std::cout << "param_setup\n";
-
 
 	AEFX_CLR_STRUCT(def);
 
@@ -497,7 +496,7 @@ Render(
 	PF_ParamDef sourceWorld{};
 	glm::vec2	ratio{ in_data->downsample_x.den, in_data->downsample_y.den };
 
-	ERR(suites.Iterate8Suite2()->iterate(
+	ERR(suites.Iterate8Suite1()->iterate(
 
 		in_data,
 		0,								// progress base
@@ -521,7 +520,7 @@ Render(
 
 		if(area.right == 0 && area.bottom == 0) continue;
 
-		ERR(suites.Iterate8Suite2()->iterate(
+		ERR(suites.Iterate8Suite1()->iterate(
 			
 			in_data,
 			0,								// progress base
@@ -546,7 +545,7 @@ Render(
 
 		if (area.right == 0 && area.bottom == 0) continue;
 
-		ERR(suites.Iterate8Suite2()->iterate(
+		ERR(suites.Iterate8Suite1()->iterate(
 
 			in_data,
 			0,								// progress base
@@ -560,7 +559,7 @@ Render(
 
 	if (plugin->render_param.cpy_pre != 0) {
 
-	ERR(suites.Iterate8Suite2()->iterate(
+	ERR(suites.Iterate8Suite1()->iterate(
 
 		in_data,
 		0,								// progress base
@@ -585,7 +584,7 @@ Render(
 
 	if (plugin->render_param.block_only == 0) {
 
-		ERR(suites.Iterate8Suite2()->iterate(
+		ERR(suites.Iterate8Suite1()->iterate(
 
 			in_data,
 			0,								// progress base
@@ -608,24 +607,22 @@ Render(
 
 
 extern "C" DllExport
-PF_Err PluginDataEntryFunction2(
+PF_Err PluginDataEntryFunction(
 	PF_PluginDataPtr inPtr,
-	PF_PluginDataCB2 inPluginDataCallBackPtr,
+	PF_PluginDataCB inPluginDataCallBackPtr,
 	SPBasicSuite * inSPBasicSuitePtr,
 	const char* inHostName,
 	const char* inHostVersion)
 {
 	PF_Err result = PF_Err_INVALID_CALLBACK;
 
-	result = PF_REGISTER_EFFECT_EXT2(
+	result = PF_REGISTER_EFFECT(
 		inPtr,
 		inPluginDataCallBackPtr,
 		"Skeleton", // Name
 		"ADBE Skeleton", // Match Name
 		"Sample Plug-ins", // Category
-		AE_RESERVED_INFO, // Reserved Info
-		"EffectMain",	// Entry point
-		"https://www.adobe.com");	// support URL
+		AE_RESERVED_INFO); // Reserved Info
 
 	return result;
 }
@@ -689,7 +686,7 @@ EffectMain(
 				&plugin,
 				output);
 			break;
-			
+
 		case PF_Cmd_USER_CHANGED_PARAM:
 			break;
 		}
